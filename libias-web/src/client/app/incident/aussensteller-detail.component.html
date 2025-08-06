@@ -1,0 +1,174 @@
+<div class="container normal-text">
+  <div class="inner-container">
+
+    <div class="div_spinner" *ngIf="busy">
+      <sk-circle></sk-circle>
+    </div>
+
+    <p-confirmDialog header="{{ 'label.Confirmation' | translate }}" icon="fa fa-question-circle" width="350" #cd>
+      <p-footer>
+        <button type="button" pButton icon="fa-check" label="{{'label.Yes' | translate}}" (click)="cd.accept()"></button>
+        <button type="button" pButton icon="fa-close" label="{{'label.No' | translate}}" (click)="cd.reject()"></button>
+      </p-footer>
+    </p-confirmDialog>
+
+    <p-growl [value]="msgs" [life]="growlLife"></p-growl>
+
+    <h1 class="page-title">{{'label.page.AussenstellerDetail' | translate}}</h1>
+
+    <h2 class="page-subtitle1" style="margin-left: 10px;">
+      <span>{{'label.CaseId' | translate}}:&nbsp;{{case.caseId}}</span>
+    </h2>
+
+    <div style="width:1700px; max-width:1700px;">
+
+      <div class="ui-g" style="margin-top:20px;">
+        <div class="ui-g-2">
+          <p-panel header="{{'label.Matches' | translate}}&nbsp;PKZ&#45;PKZ">
+            <p-listbox [options]="relatedCases" [(ngModel)]="selectedCaseId" [style]="{'width':'100%'}" (onChange)="onChangedIncidentMatch(selectedCaseId)" [style]="{'height':'200'}"></p-listbox>
+          </p-panel>
+        </div>
+        <div class="ui-g-5">
+          <div class="ui-g">
+            <table class="match-table" style="width: 100%;">
+              <tr>
+                <td>&nbsp;</td>
+                <td style="width: 200px; text-align: center">
+                  <img alt="ProbeID" src="data:image/png;base64,{{probeIdImage.imageData}}" width="150" height="200" *ngIf="probeIdImageLoaded" />
+                  <span *ngIf="probeIdImageMissing">{{'msg.ImageDeleted' | translate}}</span>
+                </td>
+                <td style="width: 200px; text-align: center">
+                  <img alt="GalleryID" src="data:image/png;base64,{{galleryIdImage.imageData}}" width="150" height="200" *ngIf="galleryIdImageLoaded" />
+                  <span *ngIf="galleryIdImageMissing">{{'msg.ImageDeleted' | translate}}</span>
+                </td>
+                <td style="vertical-align: top; text-align: center;">{{case.score | score}}&#37;</td>
+              </tr>
+              <tr class="{{getMatchRowClass(case.aPkz, case.bPkz)}}">
+                <td class="bg-color-white text-align-right">PKZ:</td>
+                <td>{{case.aPkz}}</td>
+                <td>{{case.bPkz}}</td>
+                <td class="bg-color-white text-center"><img src="assets/images/{{getMatchRowIcon(case.aPkz, case.bPkz)}}" /></td>
+              </tr>
+              <tr class="{{getMatchRowClass(case.aFileNumber, case.bFileNumber)}}">
+                <td class="bg-color-white text-align-right">{{'label.FileNumber' | translate}}:</td>
+                <td> {{case.aFileNumber}} </td>
+                <td> {{case.bFileNumber}} </td>
+                <td class="bg-color-white text-center"><img src="assets/images/{{getMatchRowIcon(case.aFileNumber, case.bFileNumber)}}" /></td>
+              </tr>
+              <tr class="{{getMatchRowClass(case.aApplicantType, case.bApplicantType)}}">
+                <td class="bg-color-white text-align-right">{{'label.ApplicationType' | translate}}:</td>
+                <td> {{case.aApplicantType}} </td>
+                <td> {{case.bApplicantType}} </td>
+                <td class="bg-color-white text-center"><img src="assets/images/{{getMatchRowIcon(case.aApplicantType, case.bApplicantType)}}" /></td>
+              </tr>
+              <tr>
+                <td class="bg-color-white text-align-right">{{'label.Office' | translate}}:</td>
+                <td> {{case.aWorkplace}} </td>
+                <td> {{case.bWorkplace}} </td>
+                <td>&nbsp;</td>
+              </tr>
+              <tr class="{{getMatchRowClass(case.aLastName, case.bLastName)}}">
+                <td class="bg-color-white text-align-right">{{'label.LastName' | translate}}:</td>
+                <td> {{case.aLastName}} </td>
+                <td> {{case.bLastName}} </td>
+                <td class="bg-color-white text-center"><img src="assets/images/{{getMatchRowIcon(case.aLastName, case.bLastName)}}" /></td>
+              </tr>
+              <tr class="{{getMatchRowClass(case.aFirstName, case.bFirstName)}}">
+                <td class="bg-color-white text-align-right">{{'label.FirstName' | translate}}:</td>
+                <td> {{case.aFirstName}}</td>
+                <td> {{case.bFirstName}} </td>
+                <td class="bg-color-white text-center"><img src="assets/images/{{getMatchRowIcon(case.aFirstName, case.bFirstName)}}" /></td>
+              </tr>
+              <tr class="{{getMatchRowClass(case.aBirthDate, case.bBirthDate)}}">
+                <td class="bg-color-white text-align-right">{{'label.BirthDate' | translate}}:</td>
+                <td> {{case.aBirthDate | date:'dd.MM.yyyy'}} </td>
+                <td> {{case.bBirthDate | date:'dd.MM.yyyy'}} </td>
+                <td class="bg-color-white text-center"><img src="assets/images/{{getMatchRowIcon(case.aBirthDate, case.bBirthDate)}}" /></td>
+              </tr>
+              <tr class="{{getMatchRowClass(case.aNationality, case.bNationality)}}">
+                <td class="bg-color-white text-align-right">{{'label.RelevantNationality' | translate}}:</td>
+                <td> {{case.aNationality}} </td>
+                <td> {{case.bNationality}} </td>
+                <td class="bg-color-white text-center"><img src="assets/images/{{getMatchRowIcon(case.aNationality, case.bNationality)}}" /></td>
+              </tr>
+              <tr class="{{getMatchRowClass(case.aBirthPlace, case.bBirthPlace)}}">
+                <td class="bg-color-white text-align-right">{{'label.BirthPlace' | translate}}:</td>
+                <td> {{case.aBirthPlace}} </td>
+                <td> {{case.bBirthPlace}} </td>
+                <td class="bg-color-white text-center"><img src="assets/images/{{getMatchRowIcon(case.aBirthPlace, case.bBirthPlace)}}" /></td>
+              </tr>
+              <tr class="{{getMatchRowClass(case.aGender, case.bGender)}}">
+                <td class="bg-color-white text-align-right">{{'label.Sex' | translate}}:</td>
+                <td> {{'label.Sex.' + case.aGender | translate}} </td>
+                <td> {{'label.Sex.' + case.bGender | translate}} </td>
+                <td class="bg-color-white text-center"><img src="assets/images/{{getMatchRowIcon(case.aGender, case.bGender)}}" /></td>
+              </tr>
+              <tr class="{{getMatchRowClass(case.aAzrNumber, case.bAzrNumber)}}">
+                <td class="bg-color-white text-align-right">{{'label.AZRNumber' | translate}}:</td>
+                <td> {{case.aAzrNumber}} </td>
+                <td> {{case.bAzrNumber}} </td>
+                <td class="bg-color-white text-center"><img src="assets/images/{{getMatchRowIcon(case.aAzrNumber, case.bAzrNumber)}}" /></td>
+              </tr>
+              <tr class="{{getMatchRowClass(case.aDNumber, case.bDNumber)}}">
+                <td class="bg-color-white text-align-right">{{'label.DNumber' | translate}}:</td>
+                <td> {{case.aDNumber}} </td>
+                <td> {{case.bDNumber}} </td>
+                <td class="bg-color-white text-center"><img src="assets/images/{{getMatchRowIcon(case.aDNumber, case.bDNumber)}}" /></td>
+              </tr>
+              <tr>
+                <td class="bg-color-white text-align-right">{{'label.ReferenceType' | translate}}:</td>
+                <td colspan="2" style="text-align: center"> {{case.referenceType}} </td>
+                <td>&nbsp;</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="ui-g-3">
+          <div class="ui-g-12" style="padding-top: 0; margin-top: 0px;">
+            <label for="case_priority">{{'label.Priority' | translate}}:</label>
+            <div> {{case.priority?.priority}} </div>
+          </div>
+          <div class="ui-g-12" style="padding-top: 0; margin-top: 0px;">
+            <label for="case_status">{{'label.Status' | translate}}:</label>
+            <div> {{'label.Status.' + case.status?.statusId | translate}} </div>
+          </div>
+          <div class="ui-g-12" style="padding-top: 0; margin-top: 0px;">
+            <label for="case_workplace">{{'label.DienstStelle' | translate}}:</label>
+            <div> {{case.workplace?.workplace}} </div>
+          </div>
+          <div class="ui-g-12">
+            <label for="case_comment">{{'label.Comment' | translate}}:</label>
+            <textarea id="case_comment" pInputTextarea autoResize="autoResize" style="width: 100%; height: 150px;" [(ngModel)]="case.note" readonly></textarea>
+          </div>
+          <div class="ui-g-12" style="padding-top: 0; margin-top: 0px;">
+            <label for="case_bemLastChanged">{{'label.LastModify' | translate}}:</label>
+            <div style="display:inline-block;" *ngIf="case.bemLastChangedBy != null && case.bemLastChangedOn != null">{{case.bemLastChangedBy + ', ' + case.bemLastChangedOn}}</div>
+          </div>
+          <div class="ui-g-12">
+            <label for="case_comment1">{{'label.WorkplaceComment' | translate}}:</label>
+            <textarea id="case_comment1" pInputTextarea autoResize="autoResize" style="width: 100%; height: 150px;" [(ngModel)]="case.workplaceNote" [attr.readonly]="disableStatusUpdate ? 'readonly' : null"></textarea>
+          </div>
+          <div class="ui-g-12" style="padding-top: 0; margin-top: 0px;">
+            <label for="case_ausLastChanged">{{'label.LastModify' | translate}}:</label>
+            <div style="display:inline-block;" *ngIf="case.ausLastChangedBy != null && case.ausLastChangedOn != null">{{case.ausLastChangedBy + ', ' + case.ausLastChangedOn}}</div>
+          </div>
+          <div class="ui-g-12">
+            <label for="case_changeHistory">{{'label.ChangeHistory' | translate}}:</label>
+            <textarea id="case_changeHistory" readonly pInputTextarea autoResize="autoResize" style="width: 100%; height: 150px;">{{historyRecord}}</textarea>
+          </div>
+          <div class="ui-g-12 ">
+            <button pButton type="button" icon="fa-floppy-o" label="{{ 'button.Finish' | translate}}" style="width: 100%" (click)="actionFinish()" [disabled]="disableStatusUpdate"></button>
+          </div>
+          <div class="ui-g-12 ">
+            <button pButton type="button" icon="fa-chevron-left" label="{{ 'button.Abort' | translate}}" style="width: 100%" (click)="actionBack()"></button>
+          </div>
+          <div class="ui-g-12 ">
+            <button pButton type="button" icon="fa-download" label="{{ 'button.ReportDownload' | translate}}" style="width: 100%" (click)="downloadReport()" *ngIf="case.status?.statusId > 1"></button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

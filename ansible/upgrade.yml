@@ -1,0 +1,39 @@
+- name: LiBiAs Upgrade
+  hosts: all
+  become: yes
+  vars:
+    libias_version: ""
+    env: ""
+
+  tasks:
+    - name: Update LiBiAs config
+      git:
+        repo: 'https://git.server.intern/idms-libias-cfg'
+        dest: /opt/appshare/libias/idms-libias-cfg
+        update: yes
+
+    - name: Stop LiBiAs-Rest
+      command: /opt/local/libias/libias-rest/stop_rest.sh
+      ignore_errors: yes
+
+    - name: Copy new libias-rest.jar
+      copy:
+        src: /opt/appshare/libias/libias-rest/libias-rest-{{ libias_version }}.jar
+        dest: /opt/local/libias/libias-rest/libias-rest.jar
+
+    - name: Update start_rest.sh
+      copy:
+        src: /opt/appshare/libias/libias-rest/{{ env }}/start_rest.sh
+        dest: /opt/local/libias/libias-rest/start_rest.sh
+        mode: '0755'
+
+    - name: Update LIBIAS_VERSION in start_rest.sh
+      replace:
+        path: /opt/local/libias/libias-rest/start_rest.sh
+        regexp: 'export LIBIAS_VERSION=.*'
+        replace: 'export LIBIAS_VERSION={{ libias_version }}'
+
+    - name: Start LiBiAs-Rest
+      command: nohup /opt/local/libias/libias-rest/start_rest.sh > /opt/local/libias/libias-rest/logs/nohup.out &
+
+# ansible-playbook upgrade.yml --extra-vars "libias_version=3.6.2 env=prod"

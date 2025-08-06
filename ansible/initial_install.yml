@@ -1,0 +1,68 @@
+- name: LiBiAs Installation and Configuration
+  hosts: all
+  become: yes
+  vars:
+    libias_version: ""
+    env: ""
+
+  tasks:
+    - name: Create new directory /opt/appshare/libias
+      file:
+        path: /opt/appshare/libias
+        state: directory
+
+    - name: Clone the LiBiAs config repository
+      git:
+        repo: 'https://git.server.intern/idms-libias-cfg'
+        dest: /opt/appshare/libias/idms-libias-cfg
+
+    - name: Create directory for LiBiAs REST
+      file:
+        path: /opt/local/libias/libias-rest
+        state: directory
+        mode: '0755'
+
+    - name: Copy bootstrap.properties
+      copy:
+        src: /opt/appshare/libias/libias-rest/{{ env }}/bootstrap.properties
+        dest: /opt/local/libias/libias-rest/bootstrap.properties
+
+    - name: Copy start_rest.sh
+      copy:
+        src: /opt/appshare/libias/libias-rest/{{ env }}/start_rest.sh
+        dest: /opt/local/libias/libias-rest/start_rest.sh
+        mode: '0755'
+
+    - name: Copy libias-rest.jar
+      copy:
+        src: /opt/appshare/libias/libias-rest/libias-rest-{{ libias_version }}.jar
+        dest: /opt/local/libias/libias-rest/libias-rest.jar
+
+    - name: Copy logback.xml
+      copy:
+        src: /opt/appshare/libias/libias-rest/logback.xml
+        dest: /opt/local/libias/libias-rest/logback.xml
+
+    - name: Copy stop_rest.sh
+      copy:
+        src: /opt/appshare/libias/libias-rest/stop_rest.sh
+        dest: /opt/local/libias/libias-rest/stop_rest.sh
+        mode: '0755'
+
+    - name: Copy restart_rest.sh
+      copy:
+        src: /opt/appshare/libias/libias-rest/restart_rest.sh
+        dest: /opt/local/libias/libias-rest/restart_rest.sh
+        mode: '0755'
+
+    - name: Update LIBIAS_VERSION in start_rest.sh
+      replace:
+        path: /opt/local/libias/libias-rest/start_rest.sh
+        regexp: 'export LIBIAS_VERSION=.*'
+        replace: 'export LIBIAS_VERSION={{ libias_version }}'
+
+    - name: Create logs directory
+      file:
+        path: /opt/local/libias/libias-rest/logs
+        state: directory
+        mode: '0755'

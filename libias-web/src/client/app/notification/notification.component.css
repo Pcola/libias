@@ -1,0 +1,32 @@
+.table-header th {
+  background-color: #009879 !important;
+  color: white !important;
+  text-align: left;
+}
+
+.bg-gray {
+  background-color: #EAECF0;
+}
+
+.add-row {
+  background-color: white;
+  border-color: white;
+  color: black;
+  width: 25px !important;
+  height: 25px !important;
+}
+
+.add-row:hover {
+  background-color: yellow;
+  border-color: yellow;
+  color: black;
+}
+
+.p-datatable {
+  width: 50% !important;
+  background-color: yellow !important;
+}
+
+.p-inputtext {
+  padding: 0 !important;
+}

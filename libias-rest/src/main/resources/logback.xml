@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+  <logger name="ch.qos.logback" level="INFO" />
+  <logger name="sk.atos.fri" level="DEBUG" />
+  <logger name="org.springframework" level="INFO" />
+  <logger name="org.eclipse" level="INFO" />
+
+  <springproperty scope="context" name="springAppName" source="spring.application.name"/>
+  <springproperty scope="context" name="instanceId" source="random.int[1000,9999]"/>
+
+  <property name="JSON_ENCODER_PATTERN" value='{
+    "severity": "%level",
+    "service": "${springAppName}",
+    "serviceversion": "${LIBIAS_VERSION}",
+    "trace": "%X{X-B3-TraceId:-}",
+    "span": "%X{X-B3-SpanId:-}",
+    "parent": "%X{X-B3-ParentSpanId:-}",
+    "exportable": "%X{X-Span-Export:-}",
+    "pid": "${PID:-}",
+    "instanceId": "${springAppName}_${instanceId}",
+    "thread": "%thread",
+    "class": "%logger",
+    "message": "%message"
+    }'
+  />
+
+  <!--
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+      <pattern>%d %-5level %logger{0} - %msg%n</pattern>
+    </encoder>
+  </appender>
+  -->
+
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${LIBIAS_HOME}/logs/libias.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <!-- daily rollover -->
+      <fileNamePattern>${LIBIAS_HOME}/logs/libias.%d{yyyy-MM-dd}.log</fileNamePattern>
+    </rollingPolicy>
+    <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+      <providers>
+        <timestamp>
+          <timeZone>UTC</timeZone>
+        </timestamp>
+        <pattern>
+          <pattern>${JSON_ENCODER_PATTERN}</pattern>
+        </pattern>
+        <logstashMarkers/>
+        <stackTrace/>
+      </providers>
+    </encoder>
+  </appender>
+
+  <if condition='isDefined("LOGSTASH_DESTINATION")'>
+    <then>
+      <appender name="STASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>${LOGSTASH_DESTINATION}</destination>
+        <connectionStrategy>
+          <random/>
+        </connectionStrategy>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+          <level>INFO</level>
+        </filter>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+          <providers>
+            <timestamp>
+              <timeZone>UTC</timeZone>
+            </timestamp>
+            <pattern>
+              <pattern>${JSON_ENCODER_PATTERN}</pattern>
+            </pattern>
+            <logstashMarkers/>
+            <stackTrace/>
+          </providers>
+        </encoder>
+        <ssl>
+          <!-- SSL using the JVM's default keystore, if no other trust store specified
+          <trustStore>
+            <location>file:///opt/appshare/mdw/miw-cfg/keystores/truststore.jks</location>
+            <password>middleware</password>
+          </trustStore>
+          -->
+        </ssl>
+      </appender>
+    </then>
+  </if>
+
+  <root level="INFO">
+    <!-- appender-ref ref="STDOUT" / -->
+    <appender-ref ref="FILE" />
+    <if condition='isDefined("LOGSTASH_DESTINATION")'>
+      <then>
+        <appender-ref ref="STASH"/>
+      </then>
+    </if>
+  </root>
+
+</configuration>

@@ -1,0 +1,13 @@
+Insert into DIENSTSTELLE (ID,DIENSTSTELLE) values ('ID1','Office 1');
+
+Insert into BAM_USER (USER_ID,USERNAME,PASSWORD,FIRST_NAME,LAST_NAME,ACTIVE,PUBLIC_SECRET,PRIVATE_SECRET,DIENSTSTELLE_ID)
+values (1,'admin','$2a$10$S5TCGtMUnk/fZQd/GSYceOGdmhX97m1ONPRxWitV6T9cx4UpKNixC','admin','admin',1,NULL,NULL,'ID1');
+
+Insert into USER_ROLE2BAM_USER (ROLE_ID,USER_ID) values (1,1);
+Insert into USER_ROLE2BAM_USER (ROLE_ID,USER_ID) values (2,1);
+Insert into USER_ROLE2BAM_USER (ROLE_ID,USER_ID) values (3,1);
+Insert into USER_ROLE2BAM_USER (ROLE_ID,USER_ID) values (4,1);
+Insert into USER_ROLE2BAM_USER (ROLE_ID,USER_ID) values (5,1);
+Insert into USER_ROLE2BAM_USER (ROLE_ID,USER_ID) values (6,1);
+
+commit;

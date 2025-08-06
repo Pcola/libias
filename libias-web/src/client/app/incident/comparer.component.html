@@ -1,0 +1,38 @@
+<div class="container normal-text">
+  <div class="inner-container">
+
+    <h1 class="page-title">{{'label.Comparer' | translate}}</h1>
+
+    <div class="div_spinner_comparer" *ngIf="busy">
+      <sk-circle></sk-circle>
+    </div>
+
+    <p-growl [value]="msgs" [life]="growlLife"></p-growl>
+
+    <div class="ui-g" style="margin-top:10px;">
+      <div class="ui-g-12">
+        <div id="imgcmp"></div>
+      </div>
+    </div>
+
+    <div *ngIf='exportVisible'>
+      <textarea pInputTextarea class='jsman personal-info-notes'
+                placeholder="Bemerkung"
+                [(ngModel)]="notes"
+                [ngStyle]="getComponentPos(0)"
+                [disabled]="!exportEnabled"></textarea>
+      <button pButton class='jsman'
+              type="button"
+              label="Herunterladen (PDF ohne Trefferwert)"
+              (click)="exportSingle()"
+              [ngStyle]="getComponentPos(1)"
+              [disabled]="!exportEnabled"></button>
+      <p-checkbox class='jsman'
+                  binary="true"
+                  label="mit Benutzernamen"
+                  [(ngModel)]="exportFullName"
+                  [ngStyle]="getComponentPos(2)"
+                  [disabled]="!exportEnabled"></p-checkbox>
+    </div>
+  </div>
+</div>

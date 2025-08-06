@@ -1,0 +1,112 @@
+<div class="container normal-text">
+  <div class="inner-container">
+
+    <h1 class="page-title">{{'label.DataImport' | translate}}</h1>
+
+    <div class="div_spinner" *ngIf="busy">
+      <sk-circle></sk-circle>
+    </div>
+
+    <p-growl [(value)]="msgs" life="growlLife"></p-growl>
+
+    <div class="ui-g">
+      <div class="ui-g-8 no-top-bottom-padding">
+        <div class="ui-g-12 top-padding-2" style="text-align: left;">
+          <button pButton type="button" icon="fa-play" iconPos="left" label="{{'label.StartJobFull' | translate}}" (click)="dataImportFull()" [disabled]="busy"></button>
+          <button pButton type="button" icon="fa-play" iconPos="left" label="{{'label.StartJobSkipMaris' | translate}}" (click)="dataImportSkipMaris()" [disabled]="busy"></button>
+          <button pButton type="button" icon="fa-refresh" iconPos="left" label="{{'label.Verify' | translate}}" (click)="getJobStatus()"></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ui-g" style="margin-top: 20px;">
+      <div class="ui-g-8 no-top-bottom-padding">
+        <div class="ui-g-12 top-padding-2" style="text-align: left;">
+          <button pButton type="button" label="Get bild" (click)="getBild()"></button>
+          <button pButton type="button" label="Get aktenzeichen" (click)="getAktenzeichen()"></button>
+          <button pButton type="button" label="Start bild performance" (click)="getBildPerformance()"></button>
+          <button pButton type="button" label="Start akte performance" (click)="getAktenzeichenPerformance()"></button>
+          <button pButton type="button" label="Get updated antragstellers" (click)="getUpdatedApplicants()"></button>
+          <button pButton type="button" label="Get token" (click)="getToken()"></button>
+        </div>
+      </div>
+    </div>
+    <div class="ui-g" style="margin-top: 20px;">
+      <div class="ui-g-4 no-top-bottom-padding">
+        <div class="ui-g-5 top-padding-2" style="text-align: right;"><label for="input_bild">Bild id:</label></div>
+        <div class="ui-g-6 top-padding-2">
+          <input id="input_bild" class="ui-inputtext ui-corner-all ui-state-default" type="text" [(ngModel)]="request.bildId"  name="bild"/>
+        </div>
+      </div>
+    </div>
+    <div class="ui-g">
+      <div class="ui-g-4 no-top-bottom-padding">
+        <div class="ui-g-5 top-padding-2" style="text-align: right;"><label for="input_aktenzeichenA">AktenzeichenA:</label></div>
+        <div class="ui-g-6 top-padding-2">
+          <input id="input_aktenzeichenA" class="ui-inputtext ui-corner-all ui-state-default" type="text" [(ngModel)]="request.aktenzeichenA"  name="aktenzeichenA"/>
+        </div>
+      </div>
+    </div>
+    <div class="ui-g">
+      <div class="ui-g-4 no-top-bottom-padding">
+        <div class="ui-g-5 top-padding-2" style="text-align: right;"><label for="input_aktenzeichenB">AktenzeichenB:</label></div>
+        <div class="ui-g-6 top-padding-2">
+          <input id="input_aktenzeichenB" class="ui-inputtext ui-corner-all ui-state-default" type="text" [(ngModel)]="request.aktenzeichenB"  name="aktenzeichenB"/>
+        </div>
+      </div>
+    </div>
+    <div class="ui-g" style="margin-top: 20px;">
+      <div class="ui-g-4 no-top-bottom-padding">
+        <div class="ui-g-5 top-padding-2" style="text-align: right;">{{'label.ImportStatus' | translate}}:</div>
+        <div class="ui-g-6 top-padding-2">
+          <img src="assets/images/Tick_Mark_20px.png" alt="{{'label.Success' | translate}}" title="{{'label.Success' | translate}}" style="border:0;" *ngIf="dataImportFinished && dataImportStatus" />
+          <img src="assets/images/play_16px.png" alt="{{'label.Inprogress' | translate}}" title="{{'label.Inprogress' | translate}}" style="border:0;" *ngIf="dataImportRunning" />
+          <img src="assets/images/Close_Icon_16px.png" alt="{{'label.Error' | translate}}" title="{{'label.Error' | translate}}" style="border:0;" *ngIf="dataImportFinished && !dataImportStatus" />
+        </div>
+      </div>
+    </div>
+    <div class="ui-g">
+      <div class="ui-g-4 no-top-bottom-padding">
+        <div class="ui-g-5 top-padding-2" style="text-align: right;">{{'label.EnrollmentStatus' | translate}}:</div>
+        <div class="ui-g-6 top-padding-2">
+          <img src="assets/images/Tick_Mark_20px.png" alt="{{'label.Success' | translate}}" title="{{'label.Success' | translate}}" style="border:0;" *ngIf="enrollmentFinished && enrollmentStatus" />
+          <img src="assets/images/play_16px.png" alt="{{'label.Inprogress' | translate}}" title="{{'label.Inprogress' | translate}}" style="border:0;" *ngIf="enrollmentRunning" />
+          <img src="assets/images/Close_Icon_16px.png" alt="{{'label.Error' | translate}}" title="{{'label.Error' | translate}}" style="border:0;" *ngIf="enrollmentFinished && !enrollmentStatus" />
+        </div>
+      </div>
+    </div>
+    <div class="ui-g">
+      <div class="ui-g-4 no-top-bottom-padding">
+        <div class="ui-g-5 top-padding-2" style="text-align: right;">{{'label.IdentificationStatus' | translate}}:</div>
+        <div class="ui-g-6 top-padding-2">
+          <img src="assets/images/Tick_Mark_20px.png" alt="{{'label.Success' | translate}}" title="{{'label.Success' | translate}}" style="border:0;" *ngIf="dataIdentificationFinished && identificationStatus" />
+          <img src="assets/images/play_16px.png" alt="{{'label.Inprogress' | translate}}" title="{{'label.Inprogress' | translate}}" style="border:0;" *ngIf="dataIdentificationRunning" />
+          <img src="assets/images/Close_Icon_16px.png" alt="{{'label.Error' | translate}}" title="{{'label.Error' | translate}}" style="border:0;" *ngIf="dataIdentificationFinished && !identificationStatus" />
+        </div>
+      </div>
+    </div>
+    <div class="ui-g" *ngIf="jobStatus.jobStarted">
+      <div class="ui-g-4 no-top-bottom-padding">
+        <div class="ui-g-5 top-padding-2" style="text-align: right;">{{'label.JobStarted' | translate}}:</div>
+        <div class="ui-g-6 top-padding-2">{{jobStatus.jobStarted}}</div>
+      </div>
+    </div>
+    <div class="ui-g" *ngIf="jobStatus.jobFinished">
+      <div class="ui-g-4 no-top-bottom-padding">
+        <div class="ui-g-5 top-padding-2" style="text-align: right;">{{'label.JobFinished' | translate}}:</div>
+        <div class="ui-g-6 top-padding-2">{{jobStatus.jobFinished}}</div>
+      </div>
+    </div>
+    <div class="ui-g" *ngIf="jobStatus.jobFinished">
+      <div class="ui-g-4 no-top-bottom-padding">
+        <div class="ui-g-5 top-padding-2" style="text-align: right;">{{'label.JobRunningTime' | translate}}:</div>
+        <div class="ui-g-6 top-padding-2">{{jobDuration}}</div>
+      </div>
+    </div>
+    <div class="ui-g" *ngIf="jobStatus.errorMessage">
+      <div class="ui-g-4 no-top-bottom-padding">
+        <div class="ui-g-5 top-padding-2" style="text-align: right;">{{'label.ErrorMessage' | translate}}:</div>
+        <div class="ui-g-6 top-padding-2"><textarea pInputTextarea autoResize="autoResize" readonly="readonly" style="width: 1090px; height: 400px;" [(ngModel)]="jobStatus.errorMessage"></textarea></div>
+      </div>
+    </div>
+  </div>

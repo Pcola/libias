@@ -1,0 +1,12 @@
+GET http://localhost:8080/libias-rest/user/kristian
+
+POST http://localhost:8080/libias-rest/incident/search
+GET http://localhost:8080/libias-rest/incident/1
+GET http://localhost:8080/libias-rest/incident/matches/1
+
+http://localhost:8080/libias-rest/incident/update
+{
+"probeIdId": "1",
+"galleryIdId": "4",
+"statusId": "2"
+}

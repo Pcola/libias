@@ -1,0 +1,1787 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="FVDBScanID"
+             xmlns:tns="urn:cognitec.com/DBScanID/WS/2.6/XMLSchema/FVDBScanID.wsdl"
+             xmlns:ws="urn:cognitec.com/DBScanID/WS/2.6/XMLSchema"
+ xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             targetNamespace="urn:cognitec.com/DBScanID/WS/2.6/XMLSchema/FVDBScanID.wsdl"
+ xmlns:SOAP="http://schemas.xmlsoap.org/wsdl/soap/"
+ xmlns="http://schemas.xmlsoap.org/wsdl/">
+
+<types>
+
+    <schema xmlns:ws="urn:cognitec.com/DBScanID/WS/2.6/XMLSchema"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="urn:cognitec.com/DBScanID/WS/2.6/XMLSchema"
+  xmlns="http://www.w3.org/2001/XMLSchema"
+            elementFormDefault="qualified">
+        <simpleType name="Domain">
+            <restriction base="xsd:string">
+                <enumeration value="Manual"/><!-- enum const = 0 -->
+                <enumeration value="Algo"/><!-- enum const = 1 -->
+                <enumeration value="Other"/><!-- enum const = 2 -->
+            </restriction>
+        </simpleType>
+  <simpleType name="Gender">
+   <restriction base="xsd:string">
+    <enumeration value="female"/><!-- enum const = 0 -->
+    <enumeration value="male"/><!-- enum const = 1 -->
+   </restriction>
+  </simpleType>
+  <simpleType name="Ethnicity">
+   <restriction base="xsd:string">
+    <enumeration value="white"/><!-- enum const = 0 -->
+    <enumeration value="black"/><!-- enum const = 1 -->
+    <enumeration value="asian"/><!-- enum const = 2 -->
+   </restriction>
+  </simpleType>
+  <complexType name="Image">
+   <annotation>
+    <documentation>image can be JPEG, PNG, PGM</documentation>
+   </annotation>
+   <sequence>
+     <element name="binaryImg" type="xsd:base64Binary" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </sequence>
+  </complexType>
+  <complexType name="Position">
+   <sequence>
+     <element name="x" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+     <element name="y" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+        <complexType name="EyesPos">
+   <sequence>
+       <element name="right" type="ws:Position" minOccurs="1" maxOccurs="1"/>
+     <element name="left" type="ws:Position" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+        </complexType>
+        <complexType name="Producer">
+            <sequence>
+                <element name="id" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+                <element name="domain" type="ws:Domain" minOccurs="1" maxOccurs="1"/>
+            </sequence>
+        </complexType>
+        <complexType name="BoundingBox">
+            <sequence>
+                <element name="center" type="ws:Position" minOccurs="1" maxOccurs="1"/>
+                <element name="width" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+                <element name="height" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+                <element name="alpha" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+            </sequence>
+        </complexType>
+        <complexType name="FaceLocation">
+            <sequence>
+                <element name="producer" type="ws:Producer" minOccurs="1" maxOccurs="1"/>
+                <element name="boundingBox" type="ws:BoundingBox" minOccurs="1" maxOccurs="1"/>
+     <element name="confidence" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+                <element name="rightEye" type="ws:Position" minOccurs="0" maxOccurs="1" nillable="true"/>
+                <element name="leftEye" type="ws:Position" minOccurs="0" maxOccurs="1" nillable="true"/>
+                <element name="noseTip" type="ws:Position" minOccurs="0" maxOccurs="1" nillable="true"/>
+                <element name="rightMouthCorner" type="ws:Position" minOccurs="0" maxOccurs="1" nillable="true"/>
+                <element name="leftMouthCorner" type="ws:Position" minOccurs="0" maxOccurs="1" nillable="true"/>
+   </sequence>
+  </complexType>
+  <complexType name="AnnotatedImage">
+   <sequence>
+       <element name="image" type="ws:Image" minOccurs="1" maxOccurs="1"/>
+       <element name="faceLocation" type="ws:FaceLocation" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <complexType name="AnnotatedImageRef">
+   <sequence>
+       <element name="imageURL" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+       <element name="faceLocation" type="ws:FaceLocation" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <complexType name="StringList">
+   <sequence>
+     <element name="values" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+   </sequence>
+  </complexType>
+  <complexType name="ImageSet">
+   <sequence>
+     <element name="images" type="ws:Image" minOccurs="0" maxOccurs="unbounded"/>
+   </sequence>
+  </complexType>
+  <complexType name="ImageRefSet">
+   <sequence>
+     <element name="images" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+   </sequence>
+  </complexType>
+  <complexType name="AnnotatedImageSet">
+   <sequence>
+     <element name="faces" type="ws:AnnotatedImage" minOccurs="0" maxOccurs="unbounded"/>
+   </sequence>
+  </complexType>
+  <complexType name="AnnotatedImageRefSet">
+   <sequence>
+     <element name="faces" type="ws:AnnotatedImageRef" minOccurs="0" maxOccurs="unbounded"/>
+   </sequence>
+  </complexType>
+  <complexType name="FaceLocations">
+   <annotation>
+    <documentation>stores face locations (as eyes) in an facial image</documentation>
+   </annotation>
+   <sequence>
+       <element name="faces" type="ws:FaceLocation" minOccurs="0" maxOccurs="unbounded"/>
+   </sequence>
+  </complexType>
+  <complexType name="PortraitEthnicityMeasurements">
+   <annotation>
+    <documentation>ethnicity measurement</documentation>
+   </annotation>
+   <sequence>
+     <element name="white" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+     <element name="black" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+     <element name="asian" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <complexType name="PortraitCharacteristics">
+   <annotation>
+    <documentation>portrait characteristics measurements</documentation>
+   </annotation>
+   <sequence>
+     <element name="isColor" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="width" type="xsd:unsignedInt" minOccurs="1" maxOccurs="1"/>
+     <element name="height" type="xsd:unsignedInt" minOccurs="1" maxOccurs="1"/>
+       <element name="rightEye" type="ws:Position" minOccurs="1" maxOccurs="1"/>
+     <element name="eyeDistance" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+     <element name="faceCenter" type="ws:Position" minOccurs="1" maxOccurs="1"/>
+     <element name="numberOfFaces" type="xsd:unsignedInt" minOccurs="1" maxOccurs="1"/>
+       <element name="leftEye" type="ws:Position" minOccurs="1" maxOccurs="1"/>
+     <element name="glasses" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+       <element name="rightEyeOpen" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+       <element name="leftEyeOpen" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+       <element name="rightEyeGazeFrontal" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+       <element name="leftEyeGazeFrontal" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+       <element name="rightEyeRed" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+       <element name="leftEyeRed" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+       <element name="rightEyeTinted" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+       <element name="leftEyeTinted" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+     <element name="mouthClosed" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+     <element name="exposure" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+     <element name="grayScaleDensity" type="xsd:unsignedInt" minOccurs="1" maxOccurs="1"/>
+     <element name="naturalSkinColour" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+     <element name="hotSpots" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+     <element name="backgroundUniformity" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+     <element name="widthOfHead" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+     <element name="lengthOfHead" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+     <element name="poseAngleRoll" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+     <element name="chin" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+     <element name="crown" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+       <element name="rightEar" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+       <element name="leftEar" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+     <element name="deviationFromFrontalPose" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+     <element name="isMale" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+     <element name="deviationFromUniformLighting" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+     <element name="sharpness" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+     <element name="ethnicity" type="ws:PortraitEthnicityMeasurements" minOccurs="1" maxOccurs="1"/>
+     <element name="age" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+       <element name="under18" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+       <element name="under21" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+       <element name="faceMaskScore" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <complexType name="ISO-19794-5FullFrontalCompliance">
+   <annotation>
+    <documentation>complience with the ISO_19794_5 FullFrontal standard</documentation>
+   </annotation>
+   <sequence>
+     <element name="onlyOneFaceVisible" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="goodVerticalFacePosition" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="horizontallyCenteredFace" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="widthOfHead" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="lengthOfHead" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="widthOfHeadBestPractice" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="lengthOfHeadBestPractice" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="resolution" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="resolutionBestPractice" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="goodExposure" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="goodGrayScaleProfile" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="backgroundUniformityBestPractice" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="isFrontal" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="isFrontalBestPractice" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="isLightingUniform" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="eyesOpenBestPractice" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="imageWidthToHeightBestPractice" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="isSharp" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="mouthClosedBestPractice" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="hasNaturalSkinColour" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="noHotSpots" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="eyesNotRed" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="eyesGazeFrontalBestPractice" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="noTintedGlasses" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="isCompliant" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="isBestPractice" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <complexType name="PortraitFeatureSet">
+   <annotation>
+    <documentation>portrait feature set</documentation>
+   </annotation>
+   <sequence>
+     <element name="wearsGlasses" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="gender" type="ws:Gender" minOccurs="1" maxOccurs="1"/>
+     <element name="ethnicity" type="ws:Ethnicity" minOccurs="1" maxOccurs="1"/>
+     <element name="age" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+       <element name="under18" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+       <element name="under21" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+       <element name="wearsFaceMask" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <complexType name="AnalyzePortraitResult">
+   <sequence>
+       <element name="foundFace" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="successfulProcessed" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="portraitCharacteristics" type="ws:PortraitCharacteristics" minOccurs="1" maxOccurs="1"/>
+     <element name="isoCompliance" type="ws:ISO-19794-5FullFrontalCompliance" minOccurs="1" maxOccurs="1"/>
+     <element name="featureSet" type="ws:PortraitFeatureSet" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <complexType name="CaseProperty">
+   <sequence>
+     <element name="name" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+     <element name="value" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <complexType name="CaseProperties">
+   <sequence>
+     <element name="values" type="ws:CaseProperty" minOccurs="0" maxOccurs="unbounded"/>
+   </sequence>
+  </complexType>
+  <complexType name="ImageProcessingInfo">
+   <annotation>
+    <documentation>image processing information</documentation>
+   </annotation>
+   <sequence>
+     <element name="id" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+       <element name="foundFace" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+       <element name="faceLocation" type="ws:FaceLocation" minOccurs="1" maxOccurs="1"/>
+     <element name="sampleRejected" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="rejectedReason" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <complexType name="EnrollmentResult">
+   <sequence>
+     <element name="transactionId" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+     <element name="processedImages" type="ws:ImageProcessingInfo" minOccurs="0" maxOccurs="unbounded"/>
+     <element name="successfullEnrolled" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <complexType name="Match">
+   <sequence>
+     <element name="rank" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+     <element name="caseID" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+     <element name="score" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <complexType name="MatchSet">
+   <sequence>
+     <element name="m" type="ws:Match" minOccurs="0" maxOccurs="unbounded"/>
+   </sequence>
+  </complexType>
+  <complexType name="IdentificationResult">
+   <sequence>
+     <element name="transactionId" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+     <element name="processedImage" type="ws:ImageProcessingInfo" minOccurs="1" maxOccurs="1"/>
+     <element name="matches" type="ws:MatchSet" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <complexType name="VerificationResult">
+   <sequence>
+     <element name="transactionId" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+     <element name="notEnrolled" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="processedImage" type="ws:ImageProcessingInfo" minOccurs="1" maxOccurs="1"/>
+     <element name="successfulVerified" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="score" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <complexType name="VerificationPortraitsResult">
+   <annotation>
+    <documentation>result of a comparision of two images A and B</documentation>
+   </annotation>
+   <sequence>
+     <element name="transactionId" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+     <element name="processedImageA" type="ws:ImageProcessingInfo" minOccurs="1" maxOccurs="1"/>
+     <element name="processedImageB" type="ws:ImageProcessingInfo" minOccurs="1" maxOccurs="1"/>
+     <element name="successfulVerified" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+     <element name="score" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+  <!-- operation request element -->
+  <element name="alive">
+   <complexType>
+    <sequence>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="aliveResponse">
+   <complexType>
+    <sequence>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="find-faces">
+   <complexType>
+    <sequence>
+     <element name="image" type="ws:Image" minOccurs="0" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="FindFacesResponse">
+   <complexType>
+    <sequence>
+     <element name="val" type="ws:FaceLocations" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="analyze-portrait">
+   <complexType>
+    <sequence>
+     <element name="image" type="ws:Image" minOccurs="0" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="AnalyzePortraitResponse">
+   <complexType>
+    <sequence>
+     <element name="val" type="ws:AnalyzePortraitResult" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="analyze-portrait-annotated">
+   <complexType>
+    <sequence>
+     <element name="annotatedImage" type="ws:AnnotatedImage" minOccurs="0" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="AnalyzePortraitAnnotatedResponse">
+   <complexType>
+    <sequence>
+     <element name="val" type="ws:AnalyzePortraitResult" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="fvdb-addCase">
+   <complexType>
+    <sequence>
+     <element name="caseID" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="properties" type="ws:CaseProperties" minOccurs="0" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="addCaseResponse">
+   <complexType>
+    <sequence>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="fvdb-changeCaseProperties">
+   <complexType>
+    <sequence>
+     <element name="caseID" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="properties" type="ws:CaseProperties" minOccurs="0" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="changeCaseResponse">
+   <complexType>
+    <sequence>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="fvdb-caseExists">
+   <complexType>
+    <sequence>
+     <element name="caseID" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="fvdb-caseExistsResponse">
+   <complexType>
+    <sequence>
+     <element name="exists" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="fvdb-deleteCase">
+   <complexType>
+    <sequence>
+     <element name="caseID" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="deleteCaseResponse">
+   <complexType>
+    <sequence>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="fvdb-deleteFIR">
+   <complexType>
+    <sequence>
+     <element name="caseID" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="deleteFIRResponse">
+   <complexType>
+    <sequence>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="fvdb-getReferenceImage">
+   <complexType>
+    <sequence>
+     <element name="caseID" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="thumbnailHeight" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="ReferenceImageResponse">
+   <complexType>
+    <sequence>
+     <element name="face" type="ws:AnnotatedImage" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="fvdb-getCaseProperties">
+   <complexType>
+    <sequence>
+     <element name="caseID" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="GetCasePropertiesResponse">
+   <complexType>
+    <sequence>
+     <element name="caseProperties" type="ws:CaseProperties" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="enrollment-db">
+   <complexType>
+    <sequence>
+     <element name="caseID" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="authName" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="EnrollmentResponseDB">
+   <complexType>
+    <sequence>
+     <element name="val" type="ws:EnrollmentResult" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="enrollment-set">
+   <complexType>
+    <sequence>
+     <element name="caseId" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="imgSet" type="ws:ImageSet" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="authName" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="EnrollmentResponseSET">
+   <complexType>
+    <sequence>
+     <element name="val" type="ws:EnrollmentResult" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="enrollment-refset">
+   <complexType>
+    <sequence>
+     <element name="caseId" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="imgSet" type="ws:StringList" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="authName" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="EnrollmentResponseREFSET">
+   <complexType>
+    <sequence>
+     <element name="val" type="ws:EnrollmentResult" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="enrollment-annotated">
+   <complexType>
+    <sequence>
+     <element name="caseId" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="aImgSet" type="ws:AnnotatedImageSet" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="authName" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="EnrollmentResponseANN">
+   <complexType>
+    <sequence>
+     <element name="val" type="ws:EnrollmentResult" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="enrollment-set-ref">
+   <complexType>
+    <sequence>
+     <element name="caseId" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="imgSet" type="ws:ImageRefSet" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="authName" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="EnrollmentResponseSETRef">
+   <complexType>
+    <sequence>
+     <element name="val" type="ws:EnrollmentResult" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="enrollment-annotated-ref">
+   <complexType>
+    <sequence>
+     <element name="caseId" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="aImgSet" type="ws:AnnotatedImageRefSet" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="authName" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="EnrollmentResponseANNRef">
+   <complexType>
+    <sequence>
+     <element name="val" type="ws:EnrollmentResult" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="startDBEnrollment">
+   <complexType>
+    <sequence>
+     <element name="jobId" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="startDBEnrollmentResponse">
+   <complexType>
+    <sequence>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="waitForDBEnrollment">
+   <complexType>
+    <sequence>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="waitForDBEnrollmentResponse">
+   <complexType>
+    <sequence>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="waitForSync">
+   <complexType>
+    <sequence>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="waitForSyncResponse">
+   <complexType>
+    <sequence>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="startDBIdentification">
+   <complexType>
+    <sequence>
+     <element name="jobId" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="facility" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="startDBIdentificationResponse">
+   <complexType>
+    <sequence>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="waitForDBIdentification">
+   <complexType>
+    <sequence>
+     <element name="facility" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="waitForDBIdentificationResponse">
+   <complexType>
+    <sequence>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="identification-caseID">
+   <complexType>
+    <sequence>
+     <element name="caseID" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="authName" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="maxMatches" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+     <element name="matchListThreshold" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+     <element name="priority" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="Ident-CaseID-Response">
+   <complexType>
+    <sequence>
+     <element name="val" type="ws:IdentificationResult" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="identification">
+   <complexType>
+    <sequence>
+     <element name="image" type="ws:Image" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="authName" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="maxMatches" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+     <element name="matchListThreshold" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+     <element name="priority" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="Ident-Response">
+   <complexType>
+    <sequence>
+     <element name="val" type="ws:IdentificationResult" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="identification-annotated">
+   <complexType>
+    <sequence>
+     <element name="annotatedImage" type="ws:AnnotatedImage" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="authName" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="maxMatches" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+     <element name="matchListThreshold" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+     <element name="priority" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="Ident-Annotated-Response">
+   <complexType>
+    <sequence>
+     <element name="val" type="ws:IdentificationResult" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="identification-one2few-caseID">
+   <complexType>
+    <sequence>
+     <element name="caseID" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="selectedCases" type="ws:StringList" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="authName" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="maxMatches" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+     <element name="matchListThreshold" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+     <element name="priority" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="Ident-One2few-CaseID-Response">
+   <complexType>
+    <sequence>
+     <element name="val" type="ws:IdentificationResult" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="identification-one2few">
+   <complexType>
+    <sequence>
+     <element name="image" type="ws:Image" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="selectedCases" type="ws:StringList" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="authName" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="maxMatches" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+     <element name="matchListThreshold" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+     <element name="priority" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="Ident-One2few-Response">
+   <complexType>
+    <sequence>
+     <element name="val" type="ws:IdentificationResult" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="identification-one2few-annotated">
+   <complexType>
+    <sequence>
+     <element name="annotatedImage" type="ws:AnnotatedImage" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="selectedCases" type="ws:StringList" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="authName" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="maxMatches" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+     <element name="matchListThreshold" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+     <element name="priority" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="Ident-One2few-Ann-Response">
+   <complexType>
+    <sequence>
+     <element name="val" type="ws:IdentificationResult" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="identification-binning-caseID">
+   <complexType>
+    <sequence>
+     <element name="caseID" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="binningSQL" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="authName" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="maxMatches" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+     <element name="matchListThreshold" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+     <element name="priority" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="Ident-Binning-CaseID-Response">
+   <complexType>
+    <sequence>
+     <element name="val" type="ws:IdentificationResult" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="identification-binning">
+   <complexType>
+    <sequence>
+     <element name="image" type="ws:Image" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="binningSQL" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="authName" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="maxMatches" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+     <element name="matchListThreshold" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+     <element name="priority" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="Ident-Binning-Response">
+   <complexType>
+    <sequence>
+     <element name="val" type="ws:IdentificationResult" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="identification-binning-annotated">
+   <complexType>
+    <sequence>
+     <element name="annotatedImage" type="ws:AnnotatedImage" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="binningSQL" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="authName" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="maxMatches" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+     <element name="matchListThreshold" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+     <element name="priority" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="Ident-Bin-Ann-Response">
+   <complexType>
+    <sequence>
+     <element name="val" type="ws:IdentificationResult" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="verification">
+   <complexType>
+    <sequence>
+     <element name="caseID" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="image" type="ws:Image" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="authName" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="Verification-Response">
+   <complexType>
+    <sequence>
+     <element name="val" type="ws:VerificationResult" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="verification-annotated">
+   <complexType>
+    <sequence>
+     <element name="caseID" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="annotatedImage" type="ws:AnnotatedImage" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="authName" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="Verification-Ann-Response">
+   <complexType>
+    <sequence>
+     <element name="val" type="ws:VerificationResult" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="verification-portraits">
+   <complexType>
+    <sequence>
+     <element name="imageA" type="ws:Image" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="imageB" type="ws:Image" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="authName" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="Verification-Portraits-Response">
+   <complexType>
+    <sequence>
+     <element name="val" type="ws:VerificationPortraitsResult" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation request element -->
+  <element name="verification-portraits-annotated">
+   <complexType>
+    <sequence>
+     <element name="annotatedImageA" type="ws:AnnotatedImage" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="annotatedImageB" type="ws:AnnotatedImage" minOccurs="0" maxOccurs="1" nillable="true"/>
+     <element name="authName" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <!-- operation response element -->
+  <element name="Verification-Portraits-Annotated-Response">
+   <complexType>
+    <sequence>
+     <element name="val" type="ws:VerificationPortraitsResult" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+        <!-- operation request element -->
+        <element name="estimateEyesPositions">
+            <complexType>
+                <sequence>
+                    <element name="location" type="ws:FaceLocation" minOccurs="0" maxOccurs="1" nillable="true"/>
+                </sequence>
+            </complexType>
+        </element>
+        <!-- operation response element -->
+        <element name="EyesPosResponse">
+            <complexType>
+                <sequence>
+                    <element name="eyePos" type="ws:EyesPos" minOccurs="1" maxOccurs="1"/>
+                </sequence>
+            </complexType>
+        </element>
+        <!-- operation request element -->
+        <element name="createManualAnnotatedFaceLocation">
+            <complexType>
+                <sequence>
+                    <element name="eyes" type="ws:EyesPos" minOccurs="0" maxOccurs="1" nillable="true"/>
+                    <element name="id" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+                </sequence>
+            </complexType>
+        </element>
+        <!-- operation response element -->
+        <element name="FaceLocationResponse">
+            <complexType>
+                <sequence>
+                    <element name="faceLocation" type="ws:FaceLocation" minOccurs="1" maxOccurs="1"/>
+                </sequence>
+            </complexType>
+        </element>
+ </schema>
+
+</types>
+
+<message name="alive">
+ <part name="parameters" element="ws:alive"/>
+</message>
+
+<message name="aliveResponse">
+ <part name="parameters" element="ws:aliveResponse"/>
+</message>
+
+<message name="find-faces">
+ <part name="parameters" element="ws:find-faces"/>
+</message>
+
+<message name="FindFacesResponse">
+ <part name="parameters" element="ws:FindFacesResponse"/>
+</message>
+
+<message name="analyze-portrait">
+ <part name="parameters" element="ws:analyze-portrait"/>
+</message>
+
+<message name="AnalyzePortraitResponse">
+ <part name="parameters" element="ws:AnalyzePortraitResponse"/>
+</message>
+
+<message name="analyze-portrait-annotated">
+ <part name="parameters" element="ws:analyze-portrait-annotated"/>
+</message>
+
+<message name="AnalyzePortraitAnnotatedResponse">
+ <part name="parameters" element="ws:AnalyzePortraitAnnotatedResponse"/>
+</message>
+
+<message name="fvdb-addCase">
+ <part name="parameters" element="ws:fvdb-addCase"/>
+</message>
+
+<message name="addCaseResponse">
+ <part name="parameters" element="ws:addCaseResponse"/>
+</message>
+
+<message name="fvdb-changeCaseProperties">
+ <part name="parameters" element="ws:fvdb-changeCaseProperties"/>
+</message>
+
+<message name="changeCaseResponse">
+ <part name="parameters" element="ws:changeCaseResponse"/>
+</message>
+
+<message name="fvdb-caseExistsRequest">
+ <part name="parameters" element="ws:fvdb-caseExists"/>
+</message>
+
+<message name="fvdb-caseExistsResponse">
+ <part name="parameters" element="ws:fvdb-caseExistsResponse"/>
+</message>
+
+<message name="fvdb-deleteCase">
+ <part name="parameters" element="ws:fvdb-deleteCase"/>
+</message>
+
+<message name="deleteCaseResponse">
+ <part name="parameters" element="ws:deleteCaseResponse"/>
+</message>
+
+<message name="fvdb-deleteFIR">
+ <part name="parameters" element="ws:fvdb-deleteFIR"/>
+</message>
+
+<message name="deleteFIRResponse">
+ <part name="parameters" element="ws:deleteFIRResponse"/>
+</message>
+
+<message name="fvdb-getReferenceImage">
+ <part name="parameters" element="ws:fvdb-getReferenceImage"/>
+</message>
+
+<message name="ReferenceImageResponse">
+ <part name="parameters" element="ws:ReferenceImageResponse"/>
+</message>
+
+<message name="fvdb-getCaseProperties">
+ <part name="parameters" element="ws:fvdb-getCaseProperties"/>
+</message>
+
+<message name="GetCasePropertiesResponse">
+ <part name="parameters" element="ws:GetCasePropertiesResponse"/>
+</message>
+
+<message name="enrollment-db">
+ <part name="parameters" element="ws:enrollment-db"/>
+</message>
+
+<message name="EnrollmentResponseDB">
+ <part name="parameters" element="ws:EnrollmentResponseDB"/>
+</message>
+
+<message name="enrollment-set">
+ <part name="parameters" element="ws:enrollment-set"/>
+</message>
+
+<message name="EnrollmentResponseSET">
+ <part name="parameters" element="ws:EnrollmentResponseSET"/>
+</message>
+
+<message name="enrollment-refset">
+ <part name="parameters" element="ws:enrollment-refset"/>
+</message>
+
+<message name="EnrollmentResponseREFSET">
+ <part name="parameters" element="ws:EnrollmentResponseREFSET"/>
+</message>
+
+<message name="enrollment-annotated">
+ <part name="parameters" element="ws:enrollment-annotated"/>
+</message>
+
+<message name="EnrollmentResponseANN">
+ <part name="parameters" element="ws:EnrollmentResponseANN"/>
+</message>
+
+<message name="enrollment-set-ref">
+ <part name="parameters" element="ws:enrollment-set-ref"/>
+</message>
+
+<message name="EnrollmentResponseSETRef">
+ <part name="parameters" element="ws:EnrollmentResponseSETRef"/>
+</message>
+
+<message name="enrollment-annotated-ref">
+ <part name="parameters" element="ws:enrollment-annotated-ref"/>
+</message>
+
+<message name="EnrollmentResponseANNRef">
+ <part name="parameters" element="ws:EnrollmentResponseANNRef"/>
+</message>
+
+<message name="startDBEnrollment">
+ <part name="parameters" element="ws:startDBEnrollment"/>
+</message>
+
+<message name="startDBEnrollmentResponse">
+ <part name="parameters" element="ws:startDBEnrollmentResponse"/>
+</message>
+
+<message name="waitForDBEnrollment">
+ <part name="parameters" element="ws:waitForDBEnrollment"/>
+</message>
+
+<message name="waitForDBEnrollmentResponse">
+ <part name="parameters" element="ws:waitForDBEnrollmentResponse"/>
+</message>
+
+<message name="waitForSync">
+ <part name="parameters" element="ws:waitForSync"/>
+</message>
+
+<message name="waitForSyncResponse">
+ <part name="parameters" element="ws:waitForSyncResponse"/>
+</message>
+
+<message name="startDBIdentification">
+ <part name="parameters" element="ws:startDBIdentification"/>
+</message>
+
+<message name="startDBIdentificationResponse">
+ <part name="parameters" element="ws:startDBIdentificationResponse"/>
+</message>
+
+<message name="waitForDBIdentification">
+ <part name="parameters" element="ws:waitForDBIdentification"/>
+</message>
+
+<message name="waitForDBIdentificationResponse">
+ <part name="parameters" element="ws:waitForDBIdentificationResponse"/>
+</message>
+
+<message name="identification-caseID">
+ <part name="parameters" element="ws:identification-caseID"/>
+</message>
+
+<message name="Ident-CaseID-Response">
+ <part name="parameters" element="ws:Ident-CaseID-Response"/>
+</message>
+
+<message name="identification">
+ <part name="parameters" element="ws:identification"/>
+</message>
+
+<message name="Ident-Response">
+ <part name="parameters" element="ws:Ident-Response"/>
+</message>
+
+<message name="identification-annotated">
+ <part name="parameters" element="ws:identification-annotated"/>
+</message>
+
+<message name="Ident-Annotated-Response">
+ <part name="parameters" element="ws:Ident-Annotated-Response"/>
+</message>
+
+<message name="identification-one2few-caseID">
+ <part name="parameters" element="ws:identification-one2few-caseID"/>
+</message>
+
+<message name="Ident-One2few-CaseID-Response">
+ <part name="parameters" element="ws:Ident-One2few-CaseID-Response"/>
+</message>
+
+<message name="identification-one2few">
+ <part name="parameters" element="ws:identification-one2few"/>
+</message>
+
+<message name="Ident-One2few-Response">
+ <part name="parameters" element="ws:Ident-One2few-Response"/>
+</message>
+
+<message name="identification-one2few-annotated">
+ <part name="parameters" element="ws:identification-one2few-annotated"/>
+</message>
+
+<message name="Ident-One2few-Ann-Response">
+ <part name="parameters" element="ws:Ident-One2few-Ann-Response"/>
+</message>
+
+<message name="identification-binning-caseID">
+ <part name="parameters" element="ws:identification-binning-caseID"/>
+</message>
+
+<message name="Ident-Binning-CaseID-Response">
+ <part name="parameters" element="ws:Ident-Binning-CaseID-Response"/>
+</message>
+
+<message name="identification-binning">
+ <part name="parameters" element="ws:identification-binning"/>
+</message>
+
+<message name="Ident-Binning-Response">
+ <part name="parameters" element="ws:Ident-Binning-Response"/>
+</message>
+
+<message name="identification-binning-annotated">
+ <part name="parameters" element="ws:identification-binning-annotated"/>
+</message>
+
+<message name="Ident-Bin-Ann-Response">
+ <part name="parameters" element="ws:Ident-Bin-Ann-Response"/>
+</message>
+
+<message name="verification">
+ <part name="parameters" element="ws:verification"/>
+</message>
+
+<message name="Verification-Response">
+ <part name="parameters" element="ws:Verification-Response"/>
+</message>
+
+<message name="verification-annotated">
+ <part name="parameters" element="ws:verification-annotated"/>
+</message>
+
+<message name="Verification-Ann-Response">
+ <part name="parameters" element="ws:Verification-Ann-Response"/>
+</message>
+
+<message name="verification-portraits">
+ <part name="parameters" element="ws:verification-portraits"/>
+</message>
+
+<message name="Verification-Portraits-Response">
+ <part name="parameters" element="ws:Verification-Portraits-Response"/>
+</message>
+
+<message name="verification-portraits-annotated">
+ <part name="parameters" element="ws:verification-portraits-annotated"/>
+</message>
+
+<message name="Verification-Portraits-Annotated-Response">
+ <part name="parameters" element="ws:Verification-Portraits-Annotated-Response"/>
+</message>
+
+    <message name="estimateEyesPositions">
+        <part name="parameters" element="ws:estimateEyesPositions"/>
+    </message>
+
+    <message name="EyesPosResponse">
+        <part name="parameters" element="ws:EyesPosResponse"/>
+    </message>
+
+    <message name="createManualAnnotatedFaceLocation">
+        <part name="parameters" element="ws:createManualAnnotatedFaceLocation"/>
+    </message>
+
+    <message name="FaceLocationResponse">
+        <part name="parameters" element="ws:FaceLocationResponse"/>
+    </message>
+
+    <portType name="FVDBScanIDPortType">
+ <operation name="alive">
+  <documentation>function to check for service alive</documentation>
+  <input message="tns:alive"/>
+  <output message="tns:aliveResponse"/>
+ </operation>
+ <operation name="find-faces">
+  <documentation>find faces in the given images and return the locations as eye locations</documentation>
+  <input message="tns:find-faces"/>
+  <output message="tns:FindFacesResponse"/>
+ </operation>
+ <operation name="analyze-portrait">
+  <documentation>analyze portrait characteristics of the given image</documentation>
+  <input message="tns:analyze-portrait"/>
+  <output message="tns:AnalyzePortraitResponse"/>
+ </operation>
+ <operation name="analyze-portrait-annotated">
+  <documentation>Service definition of function ws__analyze_portrait_annotated</documentation>
+  <input message="tns:analyze-portrait-annotated"/>
+  <output message="tns:AnalyzePortraitAnnotatedResponse"/>
+ </operation>
+ <operation name="fvdb-addCase">
+  <documentation>add a case with caseID identifier to the database. If the properties list is non empty the list entries will be used to set the case properties using the property name as database column name. The given value string than is converted to the appropriate database column type.</documentation>
+  <input message="tns:fvdb-addCase"/>
+  <output message="tns:addCaseResponse"/>
+ </operation>
+ <operation name="fvdb-changeCaseProperties">
+  <documentation>changes the properties for the case with caseID identifier. If the properties list is non empty the list entries will be used to set the case properties using the property name as database column name. The given value string than is converted to the appropriate database column type.</documentation>
+  <input message="tns:fvdb-changeCaseProperties"/>
+  <output message="tns:changeCaseResponse"/>
+ </operation>
+ <operation name="fvdb-caseExists">
+  <documentation>checks if the case already exists in the database and returns true in that case, otherwise false.</documentation>
+  <input message="tns:fvdb-caseExistsRequest"/>
+  <output message="tns:fvdb-caseExistsResponse"/>
+ </operation>
+ <operation name="fvdb-deleteCase">
+  <documentation>Service definition of function ws__fvdb_deleteCase</documentation>
+  <input message="tns:fvdb-deleteCase"/>
+  <output message="tns:deleteCaseResponse"/>
+ </operation>
+ <operation name="fvdb-deleteFIR">
+  <documentation>delete Secondary Biometric Data (FIR) for case with caseID</documentation>
+  <input message="tns:fvdb-deleteFIR"/>
+  <output message="tns:deleteFIRResponse"/>
+ </operation>
+ <operation name="fvdb-getReferenceImage">
+  <documentation>get reference image for case with caseID</documentation>
+  <input message="tns:fvdb-getReferenceImage"/>
+  <output message="tns:ReferenceImageResponse"/>
+ </operation>
+ <operation name="fvdb-getCaseProperties">
+  <documentation>get Case properties for case with caseID</documentation>
+  <input message="tns:fvdb-getCaseProperties"/>
+  <output message="tns:GetCasePropertiesResponse"/>
+ </operation>
+ <operation name="enrollment-db">
+  <documentation>create FIR from current database primary data. caseID names the case to enroll, authName is who trigers the enrollment. Results of the enrollment are returned in results.</documentation>
+  <input message="tns:enrollment-db"/>
+  <output message="tns:EnrollmentResponseDB"/>
+ </operation>
+ <operation name="enrollment-set">
+  <documentation>create FIR a given set of images. caseID names the case to enroll, imgSet contains a list of images (supported image formats: JPEG, PNG, PGM), authName is who trigers the enrollment. Results of the enrollment are returned in results.</documentation>
+  <input message="tns:enrollment-set"/>
+  <output message="tns:EnrollmentResponseSET"/>
+ </operation>
+ <operation name="enrollment-refset">
+  <documentation>create FIR a given set of images by name. caseID names the case to enroll, imgSet contains a list of image names (supported image formats: JPEG, PNG, PGM), authName is who trigers the enrollment. Results of the enrollment are returned in results.</documentation>
+  <input message="tns:enrollment-refset"/>
+  <output message="tns:EnrollmentResponseREFSET"/>
+ </operation>
+ <operation name="enrollment-annotated">
+  <documentation>create FIR a given set of annotated images. caseID names the case to enroll, aImgSet contains a list of annotated images (supported image formats: JPEG, PNG, PGM), authName is who trigers the enrollment. Results of the enrollment are returned in results.</documentation>
+  <input message="tns:enrollment-annotated"/>
+  <output message="tns:EnrollmentResponseANN"/>
+ </operation>
+ <operation name="enrollment-set-ref">
+  <documentation>Service definition of function ws__enrollment_set_ref</documentation>
+  <input message="tns:enrollment-set-ref"/>
+  <output message="tns:EnrollmentResponseSETRef"/>
+ </operation>
+ <operation name="enrollment-annotated-ref">
+  <documentation>Service definition of function ws__enrollment_annotated_ref</documentation>
+  <input message="tns:enrollment-annotated-ref"/>
+  <output message="tns:EnrollmentResponseANNRef"/>
+ </operation>
+ <operation name="startDBEnrollment">
+  <documentation>start database enrollment, jobId can be passed to provide an identifier for identify the results of this batch run</documentation>
+  <input message="tns:startDBEnrollment"/>
+  <output message="tns:startDBEnrollmentResponse"/>
+ </operation>
+ <operation name="waitForDBEnrollment">
+  <documentation>wait for the current database enrollment job to terminate</documentation>
+  <input message="tns:waitForDBEnrollment"/>
+  <output message="tns:waitForDBEnrollmentResponse"/>
+ </operation>
+ <operation name="waitForSync">
+  <documentation>wait the database to be synchronized with the verification and identification facilities</documentation>
+  <input message="tns:waitForSync"/>
+  <output message="tns:waitForSyncResponse"/>
+ </operation>
+ <operation name="startDBIdentification">
+  <documentation>start database identification, jobId can be passed to provide an identifier for identify the results of this run, facility contains the name of the configured processing facility to use (more than one can be configured to allow parallel processing)</documentation>
+  <input message="tns:startDBIdentification"/>
+  <output message="tns:startDBIdentificationResponse"/>
+ </operation>
+ <operation name="waitForDBIdentification">
+  <documentation>Service definition of function ws__waitForDBIdentification</documentation>
+  <input message="tns:waitForDBIdentification"/>
+  <output message="tns:waitForDBIdentificationResponse"/>
+ </operation>
+ <operation name="identification-caseID">
+  <documentation>identify the probe given by caseID against the whole current gallery. authName names who triggers the identification, maxMatches states the max lenght of the returned match list which is contained in the result, only matches above the matchListThreshold becomes member of the match list, priority controls the processing priority, a lower value means higher processing priority, range [ 0 ... MAX_INT]</documentation>
+  <input message="tns:identification-caseID"/>
+  <output message="tns:Ident-CaseID-Response"/>
+ </operation>
+ <operation name="identification">
+  <documentation>identify the given probe image (supported image formats: JPEG, PNG, PGM) against the whole current gallery. authName names who triggers the identification, maxMatches states the max lenght of the returned match list which is contained in the result, only matches above the matchListThreshold becomes member of the match list, priority controls the processing priority, a lower value means higher processing priority, range [ 0 ... MAX_INT]</documentation>
+  <input message="tns:identification"/>
+  <output message="tns:Ident-Response"/>
+ </operation>
+ <operation name="identification-annotated">
+  <documentation>identify the given annotated probe image (supported image formats: JPEG, PNG, PGM) against the whole current gallery. authName names who triggers the identification, maxMatches states the max lenght of the returned match list which is contained in the result, only matches above the matchListThreshold becomes member of the match list, priority controls the processing priority, a lower value means higher processing priority, range [ 0 ... MAX_INT]</documentation>
+  <input message="tns:identification-annotated"/>
+  <output message="tns:Ident-Annotated-Response"/>
+ </operation>
+ <operation name="identification-one2few-caseID">
+  <documentation>identify the probe given by CaseID against a sub gallery (given by a list of CaseIDs to include) of the whole current gallery. authName names who triggers the identification, maxMatches states the max lenght of the returned match list which is contained in the result, only matches above the matchListThreshold becomes member of the match list, priority controls the processing priority, a lower value means higher processing priority, range [ 0 ... MAX_INT]</documentation>
+  <input message="tns:identification-one2few-caseID"/>
+  <output message="tns:Ident-One2few-CaseID-Response"/>
+ </operation>
+ <operation name="identification-one2few">
+  <documentation>identify the given probe image (supported image formats: JPEG, PNG, PGM) against a sub gallery (given by a list of caseID to include) of the whole current gallery. authName names who triggers the identification, maxMatches states the max lenght of the returned match list which is contained in the result, only matches above the matchListThreshold becomes member of the match list, priority controls the processing priority, a lower value means higher processing priority, range [ 0 ... MAX_INT]</documentation>
+  <input message="tns:identification-one2few"/>
+  <output message="tns:Ident-One2few-Response"/>
+ </operation>
+ <operation name="identification-one2few-annotated">
+  <documentation>identify the given annotated probe image (supported image formats: JPEG, PNG, PGM) against a sub gallery (given by a list of caseID to include) of the whole current gallery. authName names who triggers the identification, maxMatches states the max lenght of the returned match list which is contained in the result, only matches above the matchListThreshold becomes member of the match list, priority controls the processing priority, a lower value means higher processing priority, range [ 0 ... MAX_INT]</documentation>
+  <input message="tns:identification-one2few-annotated"/>
+  <output message="tns:Ident-One2few-Ann-Response"/>
+ </operation>
+ <operation name="identification-binning-caseID">
+  <documentation>identify the probe given by CaseID against a sub gallery (given by a sql expression) of the whole current gallery. authName names who triggers the identification, maxMatches states the max lenght of the returned match list which is contained in the result, only matches above the matchListThreshold becomes member of the match list, priority controls the processing priority, a lower value means higher processing priority, range [ 0 ... MAX_INT]</documentation>
+  <input message="tns:identification-binning-caseID"/>
+  <output message="tns:Ident-Binning-CaseID-Response"/>
+ </operation>
+ <operation name="identification-binning">
+  <documentation>identify the given probe image (supported image formats: JPEG, PNG, PGM) against a sub gallery (given by a sql expression) of the whole current gallery. authName names who triggers the identification, maxMatches states the max lenght of the returned match list which is contained in the result, only matches above the matchListThreshold becomes member of the match list, priority controls the processing priority, a lower value means higher processing priority, range [ 0 ... MAX_INT]</documentation>
+  <input message="tns:identification-binning"/>
+  <output message="tns:Ident-Binning-Response"/>
+ </operation>
+ <operation name="identification-binning-annotated">
+  <documentation>identify the given annotated probe image (supported image formats: JPEG, PNG, PGM) against a sub gallery (given by a sql expression) of the whole current gallery. authName names who triggers the identification, maxMatches states the max lenght of the returned match list which is contained in the result, only matches above the matchListThreshold becomes member of the match list, priority controls the processing priority, a lower value means higher processing priority, range [ 0 ... MAX_INT]</documentation>
+  <input message="tns:identification-binning-annotated"/>
+  <output message="tns:Ident-Bin-Ann-Response"/>
+ </operation>
+ <operation name="verification">
+  <documentation>verify the given probe image (supported image formats: JPEG, PNG, PGM) against a enrolled case given by caseID, authName is who triggers that verification. The result contains the image processing info together with the result of verification</documentation>
+  <input message="tns:verification"/>
+  <output message="tns:Verification-Response"/>
+ </operation>
+ <operation name="verification-annotated">
+  <documentation>verify the given annotated probe image (supported image formats: JPEG, PNG, PGM) against a enrolled case given by caseID, authName is who triggers that verification. The result contains the image processing info together with the result of verification</documentation>
+  <input message="tns:verification-annotated"/>
+  <output message="tns:Verification-Ann-Response"/>
+ </operation>
+ <operation name="verification-portraits">
+  <documentation>verify the given portrait images A and B (supported image formats: JPEG, PNG, PGM), authName is who triggers that verification. The result contains the image processing infos together with the result of verification</documentation>
+  <input message="tns:verification-portraits"/>
+  <output message="tns:Verification-Portraits-Response"/>
+ </operation>
+ <operation name="verification-portraits-annotated">
+  <documentation>verify the given annotated portrait images A and B (supported image formats: JPEG, PNG, PGM), authName is who triggers that verification. The result contains the image processing infos together with the result of verification</documentation>
+  <input message="tns:verification-portraits-annotated"/>
+  <output message="tns:Verification-Portraits-Annotated-Response"/>
+ </operation>
+        <operation name="estimateEyesPositions">
+            <documentation>return the estimated eye positions from the location</documentation>
+            <input message="tns:estimateEyesPositions"/>
+            <output message="tns:EyesPosResponse"/>
+        </operation>
+        <operation name="createManualAnnotatedFaceLocation">
+            <documentation>create a FaceLocation from eyes position</documentation>
+            <input message="tns:createManualAnnotatedFaceLocation"/>
+            <output message="tns:FaceLocationResponse"/>
+        </operation>
+</portType>
+
+<binding name="FVDBScanID" type="tns:FVDBScanIDPortType">
+ <SOAP:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+ <operation name="alive">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="find-faces">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="analyze-portrait">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="analyze-portrait-annotated">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="fvdb-addCase">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="fvdb-changeCaseProperties">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="fvdb-caseExists">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="fvdb-deleteCase">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="fvdb-deleteFIR">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="fvdb-getReferenceImage">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="fvdb-getCaseProperties">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="enrollment-db">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="enrollment-set">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="enrollment-refset">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="enrollment-annotated">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="enrollment-set-ref">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="enrollment-annotated-ref">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="startDBEnrollment">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="waitForDBEnrollment">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="waitForSync">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="startDBIdentification">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="waitForDBIdentification">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="identification-caseID">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="identification">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="identification-annotated">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="identification-one2few-caseID">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="identification-one2few">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="identification-one2few-annotated">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="identification-binning-caseID">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="identification-binning">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="identification-binning-annotated">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="verification">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="verification-annotated">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="verification-portraits">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+ <operation name="verification-portraits-annotated">
+  <SOAP:operation soapAction=""/>
+  <input>
+     <SOAP:body parts="parameters" use="literal"/>
+  </input>
+  <output>
+     <SOAP:body parts="parameters" use="literal"/>
+  </output>
+ </operation>
+    <operation name="estimateEyesPositions">
+        <SOAP:operation soapAction=""/>
+        <input>
+            <SOAP:body parts="parameters" use="literal"/>
+        </input>
+        <output>
+            <SOAP:body parts="parameters" use="literal"/>
+        </output>
+    </operation>
+    <operation name="createManualAnnotatedFaceLocation">
+        <SOAP:operation soapAction=""/>
+        <input>
+            <SOAP:body parts="parameters" use="literal"/>
+        </input>
+        <output>
+            <SOAP:body parts="parameters" use="literal"/>
+        </output>
+    </operation>
+</binding>
+
+<service name="FVDBScanID">
+    <documentation>Web Services Interface for Cognitec FaceVACS-DBScan ID 5.8.0.0</documentation>
+ <port name="FVDBScanIDPort" binding="tns:FVDBScanID">
+  <SOAP:address location="http://localhost:1063"/>
+ </port>
+</service>
+
+</definitions>

@@ -1,0 +1,46 @@
+<div class="container normal-text" style="margin-bottom:0 !important;">
+  <div class="inner-container" *ngIf="isAuthenticated()">
+
+    <div class="navigationbar">
+
+      <a routerLink="/incident-list" class="navigationbar-text" style="float: left; margin-left: 20px;" *ngIf="hasRole(['ADMIN', 'SUPERUSER', 'USER'])">
+        <i class="fa fa-tasks" aria-hidden="true"></i>&nbsp;{{'label.Incidents' | translate}}
+      </a>
+      <a routerLink="/aussensteller-list" class="navigationbar-text" style="float: left; margin-left: 20px;" *ngIf="hasRole(['AUSSENSTELLEUSER', 'ADMIN'])">
+        <i class="fa fa-tasks" aria-hidden="true"></i>&nbsp;{{'label.Aussensteller' | translate}}
+      </a>
+      <a routerLink="/comparer" class="navigationbar-text" style="float: left; margin-left: 20px;" *ngIf="hasRole(['COMPARER', 'ADMIN'])">
+        <i class="fa fa-exchange" aria-hidden="true"></i>&nbsp;{{'label.Comparer' | translate}}
+      </a>
+      <a routerLink="/searcher" class="navigationbar-text" style="float: left; margin-left: 20px;" *ngIf="hasRole(['SEARCHER', 'ADMIN'])">
+        <i class="fa fa-user-circle" aria-hidden="true"></i>&nbsp;{{'label.Searcher' | translate}}
+      </a>
+      <a routerLink="/user-list" class="navigationbar-text" style="float: left; margin-left: 20px;" *ngIf="hasRole(['LOCAL_USER_MGMT']) && hasRole(['ADMIN'])">
+        <i class="fa fa-users" aria-hidden="true"></i>&nbsp;{{'label.UserManagement' | translate}}
+      </a>
+      <a routerLink="/password-change" class="navigationbar-text" style="float: left; margin-left: 20px;" *ngIf="hasRole(['LOCAL_USER_MGMT'])">
+        <i class="fa fa-key" aria-hidden="true"></i>&nbsp;{{'label.ChangePassword' | translate}}
+      </a>
+      <a routerLink="/data-import" class="navigationbar-text" style="float: left; margin-left: 20px;" *ngIf="hasRole(['ADMIN'])">
+        <i class="fa fa-download" aria-hidden="true"></i>&nbsp;{{'label.DataImport' | translate}}
+      </a>
+      <!--
+      <a routerLink="/notifications" class="navigationbar-text" style="float: left; margin-left: 20px;" *ngIf="hasRole(['ADMIN'])">
+        <i class="fa fa-bell" aria-hidden="true"></i>&nbsp;{{'label.Notifications' | translate}}
+      </a>
+      -->
+      <a routerLink="/statistics" class="navigationbar-text" style="float: left; margin-left: 20px;" *ngIf="hasRole(['SUPERUSER', 'ADMIN'])">
+        <i class="fa fa-line-chart" aria-hidden="true"></i>&nbsp;{{'label.Statistics' | translate}}
+      </a>
+      <a routerLink="/about" class="navigationbar-text" style="float: left; margin-left: 20px;">
+        <i class="fa fa-info" aria-hidden="true"></i>&nbsp;{{'label.About' | translate}}
+      </a>
+      <a routerLink="" class="navigationbar-text" style="float: left; margin-left: 20px;" (click)="logout()">
+        <i class="fa fa-sign-out" aria-hidden="true"></i>&nbsp;{{'label.Logout' | translate}}
+      </a>
+
+      <span class="navigationbar-text" style="float: right; margin-right: 10px;">{{'label.Welcome' | translate}}&#44;&nbsp;{{username}}</span>
+
+    </div>
+  </div>
+<!-- </div> -->

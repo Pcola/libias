@@ -1,0 +1,28 @@
+<div class="container normal-text" style="margin-bottom:0 !important;">
+  <div class="inner-container" *ngIf="notifications.length">
+    <table> <!-- p-table [value]="notifications" -->
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Text</th>
+          <th>Valid From</th>
+          <th>Valid To</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-notification>
+        <tr>
+          <td>{{ notification.text }}</td>
+          <td>{{ notification.validFrom | date }}</td>
+          <td>{{ notification.validTo | date }}</td>
+          <td>
+            <button pButton icon="pi pi-pencil" (click)="editNotification(notification)"></button>
+            <button pButton icon="pi pi-trash" class="p-button-danger" (click)="deleteNotification(notification)"></button>
+          </td>
+        </tr>
+      </ng-template>
+    </table>
+  </div>
+  <div *ngIf="!notifications.length">
+    <p>No notifications found.</p>
+  </div>
+</div>
