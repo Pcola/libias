@@ -4,6 +4,8 @@ import { MessageService } from 'primeng/components/common/messageservice';
 import { TranslateService } from 'ng2-translate';
 import { LoginService } from './login.service';
 import { NotificationService } from './notification.service';
+import { PersonResponse } from '../model/person';
+import { TableData } from '../model/case/table-data.model';
 
 @Injectable()
 export class Utils {
@@ -120,4 +122,27 @@ export class Utils {
     }
   }
 
+  constructInfoTable(personInfo: PersonResponse): TableData[] {
+    const data: TableData[] = [];
+
+    // data.push(new TableData('Anwendung',  personInfo ? personInfo.application : 'Lokaler speicher'));
+    // data.push(new TableData('Rechtsgrund', personInfo ? personInfo.reason : ''));
+    // data.push(new TableData('EDV-Zahl', personInfo ? personInfo.edvNumber : ''));
+    // data.push(new TableData('Lichtbildnummer', personInfo && personInfo.photoNumber ? personInfo.photoNumber.toString() : ''));
+    // data.push(new TableData('Bilddatum', personInfo && personInfo.photoDate ? personInfo.photoDate : ''));
+    // data.push(new TableData('ED-Datum', personInfo && personInfo.edDate ? personInfo.edDate : ''));
+    // data.push(new TableData('AFIS-Zahl', personInfo && personInfo.afisNumber ? personInfo.afisNumber.toString() : ''));
+
+    data.push(new TableData('Antragsteller', personInfo ? personInfo.applicantType : ''));
+    data.push(new TableData('Nachname', personInfo ? personInfo.lastName : ''));
+    data.push(new TableData('Vorname', personInfo ? personInfo.firstName : ''));
+    data.push(new TableData('Geburtsdatum', personInfo && personInfo.birthDate ? personInfo.birthDate.toString() : ''));
+    data.push(new TableData('Geburtsland', personInfo ? personInfo.birthCountry : ''));
+    data.push(new TableData('Geburtsort', personInfo ? personInfo.birthPlace : ''));
+    data.push(new TableData('Herkunftsland', personInfo ? personInfo.originCountry : ''));
+    data.push(new TableData('Antragstellerdatum', personInfo && personInfo.applicantDate ? personInfo.applicantDate.toString() : ''));
+    data.push(new TableData('Arbeitsplatz', personInfo ? personInfo.workplace : ''));
+
+    return data;
+  }
 }

@@ -70,3 +70,5 @@ export const ROLE_COMPARER = 'COMPARER';
 export const ROLE_SEARCHER = 'SEARCHER';
 
 export const PAGE_WIDTH = 1700;
+
+export const IMAGE_PNG_PREFIX = 'image/png';

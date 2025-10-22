@@ -14,3 +14,4 @@ export * from './cognitec.service';
 export * from './statistic.service';
 export * from './notification.service';
 export * from './priority.service';
+export * from './compareDataHolder.service';
