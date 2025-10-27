@@ -1,0 +1,31 @@
+<div class="container normal-text">
+  <div class="inner-container">
+
+    <h1 class="page-title">{{'label.AboutApplication' | translate}}</h1>
+
+    <div class="div_spinner" *ngIf="busy">
+      <sk-circle></sk-circle>
+    </div>
+
+    <p-growl [(value)]="msgs" life="growlLife"></p-growl>
+
+    <table>
+      <tr>
+        <td>Version der Webanwendung:</td>
+        <td style="width:20px;"> &nbsp; </td>
+        <td>{{clientVersion}} </td>
+      </tr>
+      <tr>
+        <td>Version der Serveranwendung:</td>
+        <td style="width:20px;"> &nbsp; </td>
+        <td>{{serverVersion}} </td>
+      </tr>
+      <tr>
+        <td>Copyright:</td>
+        <td style="width:20px;"> &nbsp; </td>
+        <td>&copy;&nbsp;2024&nbsp;Eviden </td>
+      </tr>
+    </table>
+
+  </div>
+</div>

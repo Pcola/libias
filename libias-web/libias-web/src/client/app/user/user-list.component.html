@@ -1,0 +1,175 @@
+<div class="container normal-text">
+  <div class="inner-container">
+
+    <p-growl [value]="msgs" [life]="growlLife"></p-growl>
+
+    <h1 class="page-title">{{'label.page.UserManagement' | translate}}</h1>
+
+    <form #createUserForm="ngForm" *ngIf="hasAdminRole">
+      <p-dialog header="{{'label.CreateUser' | translate}}" [(visible)]="displayCreateUserDialog" modal="true" width="500" minWidth="500">
+        <div class="ui-g">
+          <div class="ui-g-5" style="text-align: right;"><label for="input_username" [class.input-invalid]="usernameC.invalid">{{'label.Username' | translate}}:</label></div>
+          <div class="ui-g-6"><input id="input_username" type="text" pInputText [(ngModel)]="userChange.username" name="username" #usernameC="ngModel" required ng-minlength="3" /></div>
+        </div>
+        <div class="ui-g">
+          <div class="ui-g-5" style="text-align: right;"><label for="input_firstname" [class.input-invalid]="firstNameC.invalid">{{'label.FirstName' | translate}}:</label></div>
+          <div class="ui-g-6"><input id="input_firstname" type="text" pInputText [(ngModel)]="userChange.firstName" name="firstName" #firstNameC="ngModel" required ng-minlength="1" /></div>
+        </div>
+        <div class="ui-g">
+          <div class="ui-g-5" style="text-align: right;"><label for="input_lastname" [class.input-invalid]="lastNameC.invalid">{{'label.LastName' | translate}}:</label></div>
+          <div class="ui-g-6"><input id="input_lastname" type="text" pInputText [(ngModel)]="userChange.lastName" name="lastName" #lastNameC="ngModel" required ng-minlength="1" /></div>
+        </div>
+        <div class="ui-g">
+          <div class="ui-g-5" style="text-align: right;"><label for="input_password" [class.input-invalid]="passwordC.invalid">{{'label.Password' | translate}}:</label></div>
+          <div class="ui-g-6"><input id="input_password" [feedback]="false" type="password" pPassword [(ngModel)]="userChange.password" name="password" #passwordC="ngModel" required ng-minlength="5" /></div>
+        </div>
+        <div class="ui-g">
+          <div class="ui-g-5" style="text-align: right;"><label for="input_passwordrepeat" [class.input-invalid]="passwordRepeatC.invalid">{{'label.PasswordRepeat' | translate}}:</label></div>
+          <div class="ui-g-6"><input id="input_passwordrepeat" [feedback]="false" type="password" pPassword [(ngModel)]="passwordRepeat" name="passwordRepeat" #passwordRepeatC="ngModel" required ng-minlength="5" /></div>
+        </div>
+        <div class="ui-g">
+          <div class="ui-g-5" style="text-align: right;"><label for="case_workplace">{{'label.DienstStelle' | translate}}:</label></div>
+          <div class="ui-g-6">
+            <p-dropdown inputId="case_workplace" name="workplaceInfo" [options]="workplaceItems" [autoWidth]="false" [style]="{'width':'187px'}" [(ngModel)]="selectedWorkplaceId"></p-dropdown>
+          </div>
+        </div>
+        <div class="ui-g">
+          <div class="ui-g-5" style="text-align: right;"><label for="input_userRoleId">{{'label.Role' | translate}}:</label></div>
+          <div class="ui-g-5">
+            <div class="ui-g-12">
+              <p-checkbox name="group1" value="1" label="{{'label.Role.ADMIN' | translate }}" [(ngModel)]="userRoleIds" inputId="admin"></p-checkbox>
+            </div>
+            <div class="ui-g-12">
+              <p-checkbox name="group1" value="2" label="{{'label.Role.SUPERUSER' | translate }}" [(ngModel)]="userRoleIds" inputId="superuser"></p-checkbox>
+            </div>
+            <div class="ui-g-12">
+              <p-checkbox name="group1" value="3" label="{{'label.Role.USER' | translate }}" [(ngModel)]="userRoleIds" inputId="user"></p-checkbox>
+            </div>
+            <div class="ui-g-12">
+              <p-checkbox name="group1" value="4" label="{{'label.Role.AUSSENSTELLEUSER' | translate }}" [(ngModel)]="userRoleIds" inputId="ausenstelleuser"></p-checkbox>
+            </div>
+            <div class="ui-g-12">
+              <p-checkbox name="group1" value="5" label="{{'label.Role.COMPARER' | translate }}" [(ngModel)]="userRoleIds" inputId="comparer"></p-checkbox>
+            </div>
+            <div class="ui-g-12">
+              <p-checkbox name="group1" value="6" label="{{'label.Role.SEARCHER' | translate }}" [(ngModel)]="userRoleIds" inputId="searcher"></p-checkbox>
+            </div>
+          </div>
+        </div>
+        <p-footer>
+          <div class="ui-dialog-buttonpane ui-helper-clearfix">
+            <button type="button" pButton icon="fa-close" (click)="displayCreateUserDialog=false" label="{{'label.Cancel' | translate}}"></button>
+            <button type="button" pButton icon="fa-check" (click)="createUserForm.valid && createUser()" label="{{'label.OK' | translate}}"></button>
+          </div>
+        </p-footer>
+      </p-dialog>
+    </form>
+
+    <form #updateUserForm="ngForm" *ngIf="hasAdminRole">
+      <p-dialog header="{{'label.UpdateUser' | translate}}" [(visible)]="displayUpdateUserDialog" modal="true" width="500" minWidth="500">
+        <div class="ui-g">
+          <div class="ui-g-5" style="text-align: right;">
+      	    <label for="input_userRoleId">{{'label.Status' | translate}}:</label>
+          </div>
+          <div class="ui-g-6">
+            <p-checkbox name="user_active" [(ngModel)]="userChange.active" binary="true"></p-checkbox>
+          </div>
+        </div>
+        <div class="ui-g">
+          <div class="ui-g-5" style="text-align: right;"><label for="input_username2">{{'label.Username' | translate}}:</label></div>
+          <div class="ui-g-6"><input id="input_username2" type="text" pInputText [(ngModel)]="userChange.username" name="username" #usernameU="ngModel" readonly/></div>
+        </div>
+        <div class="ui-g">
+          <div class="ui-g-5" style="text-align: right;"><label for="input_password2" [class.input-invalid]="passwordU.invalid">{{'label.Password' | translate}}:</label></div>
+          <div class="ui-g-6"><input id="input_password2" pPassword type="password" [feedback]="false" [(ngModel)]="userChange.password" name="password" #passwordU="ngModel" /></div>
+        </div>
+        <div class="ui-g">
+          <div class="ui-g-5" style="text-align: right;"><label for="input_passwordrepeat2" [class.input-invalid]="passwordRepeatU.invalid">{{'label.PasswordRepeat' | translate}}:</label></div>
+          <div class="ui-g-6"><input id="input_passwordrepeat2" pPassword [feedback]="false" type="password" [(ngModel)]="passwordRepeat" name="passwordRepeat" #passwordRepeatU="ngModel" /></div>
+        </div>
+        <div class="ui-g">
+          <div class="ui-g-5" style="text-align: right;"><label for="case_workplace2">{{'label.DienstStelle' | translate}}:</label></div>
+          <div class="ui-g-6">
+            <p-dropdown inputId="case_workplace2" name="workplaceInfo" [options]="workplaceItems" [autoWidth]="false" [style]="{'width':'187px'}" [(ngModel)]="selectedWorkplaceId"></p-dropdown>
+          </div>
+        </div>
+        <div class="ui-g">
+          <div class="ui-g-5" style="text-align: right;"><label for="input_userRoleId">{{'label.Role' | translate}}:</label></div>
+          <div class="ui-g-5">
+            <div class="ui-g-12">
+              <p-checkbox name="group1" value="1" label="{{'label.Role.ADMIN' | translate }}" [(ngModel)]="userRoleIds" inputId="admin"></p-checkbox>
+            </div>
+            <div class="ui-g-12">
+              <p-checkbox name="group1" value="2" label="{{'label.Role.SUPERUSER' | translate }}" [(ngModel)]="userRoleIds" inputId="superuser"></p-checkbox>
+            </div>
+            <div class="ui-g-12">
+              <p-checkbox name="group1" value="3" label="{{'label.Role.USER' | translate }}" [(ngModel)]="userRoleIds" inputId="user"></p-checkbox>
+            </div>
+            <div class="ui-g-12">
+              <p-checkbox name="group1" value="4" label="{{'label.Role.AUSSENSTELLEUSER' | translate }}" [(ngModel)]="userRoleIds" inputId="ausenstelleuser"></p-checkbox>
+            </div>
+            <div class="ui-g-12">
+              <p-checkbox name="group1" value="5" label="{{'label.Role.COMPARER' | translate }}" [(ngModel)]="userRoleIds" inputId="comparer"></p-checkbox>
+            </div>
+            <div class="ui-g-12">
+              <p-checkbox name="group1" value="6" label="{{'label.Role.SEARCHER' | translate }}" [(ngModel)]="userRoleIds" inputId="searcher"></p-checkbox>
+            </div>
+          </div>
+        </div>
+        <p-footer>
+          <div class="ui-dialog-buttonpane ui-helper-clearfix">
+            <button type="button" pButton icon="fa-close" (click)="displayUpdateUserDialog=false" label="{{'label.Cancel' | translate}}"></button>
+            <button type="button" pButton icon="fa-check" (click)="updateUserForm.valid && updateUser()" label="{{'label.OK' | translate}}"></button>
+          </div>
+        </p-footer>
+      </p-dialog>
+    </form>
+
+    <div style="margin-top: 20px;">
+      <button pButton type="button" label="{{'label.CreateUser' | translate}}" icon="fa-user-plus" (click)="showCreateUserDialog()" style="margin-bottom:20px;" *ngIf="hasAdminRole"></button>
+      <p-dataTable [style]="{'padding-bottom':'85px'}" [value]="users" [rows]="10" [paginator]="true" [pageLinks]="3" [rowsPerPageOptions]="[5,10,20]" resizableColumns="true">
+        <p-header>{{"label.ListOfUsers" | translate}}</p-header>
+        <p-column field="username" [sortable]="true" [filter]="true">
+          <ng-template pTemplate="header">
+            {{'label.Username' | translate}}
+          </ng-template>
+        </p-column>
+        <p-column field="firstName" [sortable]="true">
+          <ng-template pTemplate="header">
+            {{'label.FirstName' | translate}}
+          </ng-template>
+        </p-column>
+        <p-column field="lastName" [sortable]="true">
+          <ng-template pTemplate="header">
+            {{'label.LastName' | translate}}
+          </ng-template>
+        </p-column>
+        <p-column field="active" [sortable]="true" [style]="{'width':'100px'}">
+          <ng-template pTemplate="header">
+            {{'label.Status' | translate}}
+          </ng-template>
+          <ng-template let-row="rowData" pTemplate="body">
+            <img src="assets/images/{{ getImageByStatus(row.active) }}" style="margin: 0px 34px;" title="{{ (row.active == 1 ? 'image.active' : 'image.deactivated') | translate }}"/>
+          </ng-template>
+        </p-column>
+        <!-- <p-column field="role" [sortable]="true">
+          <ng-template pTemplate="header">
+            {{'label.Role' | translate}}
+          </ng-template>
+          <ng-template let-col let-role="rowData" pTemplate="body">
+            {{'label.Role.' + role.role[col.field] | translate}}
+          </ng-template>
+        </p-column> -->
+        <p-column field="username" [style]="{'width':'280px'}">
+          <ng-template pTemplate="header">
+            {{'label.Action' | translate}}
+          </ng-template>
+          <ng-template pTemplate="body" let-col let-username="rowData">
+            <button pButton type="button" label="{{'label.Update' | translate}}" (click)="showUpdateUserDialog(username[col.field])" *ngIf="hasAdminRole"></button>
+            <button pButton type="button" label="{{'label.Logout' | translate}}" (click)="disconnectUser(username[col.field])" *ngIf="hasAdminRole"></button>
+          </ng-template>
+        </p-column>
+      </p-dataTable>
+    </div>
+  </div>
+</div>

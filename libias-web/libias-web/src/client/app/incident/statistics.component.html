@@ -1,0 +1,126 @@
+<div class="container normal-text">
+  <div class="inner-container">
+
+    <div class="div_spinner" *ngIf="busy">
+      <sk-circle></sk-circle>
+    </div>
+
+    <p-growl [value]="msgs" [life]="growlLife"></p-growl>
+
+    <h1 class="page-title">{{'label.page.Statistics' | translate}}</h1>
+
+    <table>
+      <tr>
+        <td>Anzahl Bilder:</td>
+        <td style="width:150px;">&nbsp;</td>
+        <td style="text-align:right;">{{countImages}}</td>
+      </tr>
+      <tr>
+        <td>Anzahl Treffer:</td>
+        <td>&nbsp;</td>
+        <td style="text-align:right;">{{countIncidents}}</td>
+      </tr>
+      <tr>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+      </tr>
+    </table>
+
+    <p-dataTable [value]="stats" [style]="{'margin-bottom':'50px'}" [immutable]="false" rowHover="true">
+      <p-column field="statusId" [sortable]="true">
+        <ng-template pTemplate="header">
+          {{'label.Status' | translate}}
+        </ng-template>
+        <ng-template let-col let-statusId="rowData" pTemplate="body">
+          {{'label.Status.' + statusId[col.field] | translate}}
+        </ng-template>
+      </p-column>
+      <p-column field="count" styleClass="text-center" [sortable]="true">
+        <ng-template pTemplate="header">
+          {{'label.Count' | translate}}
+        </ng-template>
+      </p-column>
+      <ng-container *ngFor="let priority of priorities">
+        <p-column field="countPrioMap" styleClass="text-center" [sortable]="true">
+          <ng-template pTemplate="header">
+            {{priority.priority}}
+          </ng-template>
+          <ng-template let-col let-countPrioMap="rowData" pTemplate="body">
+            {{countPrioMap[col.field][priority.priorityId]}}
+          </ng-template>
+        </p-column>
+      </ng-container>
+    </p-dataTable>
+
+    <h1 class="page-title">{{'label.page.Aussensteller' | translate}}&nbsp;{{'label.page.Statistics' | translate}}</h1>
+
+    <p-dataTable [value]="siteStats" [style]="{'margin-top':'20px'}" [immutable]="false" rowHover="true">
+      <p-column field="siteName" styleClass="text-center" [sortable]="true">
+        <ng-template pTemplate="header">
+          {{'label.Aussensteller' | translate}}
+        </ng-template>
+        <ng-template let-col let-siteName="rowData" pTemplate="body">
+          <span *ngIf="siteName[col.field] !== 'NO_DIENSTSTELLE'">{{siteName[col.field]}}</span>
+          <span *ngIf="siteName[col.field] === 'NO_DIENSTSTELLE'">{{'label.CasesWithoutDienstelle' | translate}}</span>
+        </ng-template>
+      </p-column>
+      <p-column field="priorityId" styleClass="text-center" [sortable]="true">
+        <ng-template pTemplate="header">
+          {{'label.Priority' | translate}}
+        </ng-template>
+      </p-column>
+      <p-column field="statusId1" styleClass="text-center" [sortable]="true">
+        <ng-template pTemplate="header">
+          {{'label.Status.1' | translate}}
+        </ng-template>
+      </p-column>
+      <p-column field="statusId2" styleClass="text-center" [sortable]="true">
+        <ng-template pTemplate="header">
+          {{'label.Status.2' | translate}}
+        </ng-template>
+      </p-column>
+      <p-column field="statusId3" styleClass="text-center" [sortable]="true">
+        <ng-template pTemplate="header">
+          {{'label.Status.3' | translate}}
+        </ng-template>
+      </p-column>
+      <p-column field="statusId4" styleClass="text-center" [sortable]="true">
+        <ng-template pTemplate="header">
+          {{'label.Status.4' | translate}}
+        </ng-template>
+      </p-column>
+      <p-column field="statusId5" styleClass="text-center" [sortable]="true">
+        <ng-template pTemplate="header">
+          {{'label.Status.5' | translate}}
+        </ng-template>
+      </p-column>
+      <p-column field="statusId6" styleClass="text-center" [sortable]="true">
+        <ng-template pTemplate="header">
+          {{'label.Status.6' | translate}}
+        </ng-template>
+      </p-column>
+      <p-column field="statusId7" styleClass="text-center" [sortable]="true">
+        <ng-template pTemplate="header">
+          {{'label.Status.7' | translate}}
+        </ng-template>
+      </p-column>
+      <p-column field="statusId8" styleClass="text-center" [sortable]="true">
+        <ng-template pTemplate="header">
+          {{'label.Status.8' | translate}}
+        </ng-template>
+      </p-column>
+      <p-column field="statusId9" styleClass="text-center" [sortable]="true">
+        <ng-template pTemplate="header">
+          {{'label.Status.9' | translate}}
+        </ng-template>
+      </p-column>
+      <p-column field="statusId10" styleClass="text-center" [sortable]="true">
+        <ng-template pTemplate="header">
+          {{'label.Status.10' | translate}}
+        </ng-template>
+      </p-column>
+    </p-dataTable>
+
+  </div>
+</div>

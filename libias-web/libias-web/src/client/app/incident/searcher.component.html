@@ -1,0 +1,119 @@
+<div class="container normal-text">
+  <div class="inner-container">
+
+    <h1 class="page-title">{{'label.Searcher' | translate}}</h1>
+
+    <h2 class="page-subtitle2" style="margin-left: 10px;">{{'label.SearcherNotice' | translate}}</h2>
+
+    <h2 class="page-subtitle2" style="margin-left: 10px;">
+      <label *ngIf="searchRestricted" style="color: red;">{{'label.SearcherRestrictedNotice' | translate}}</label>
+      <label *ngIf="!searchRestricted">&nbsp;</label>
+    </h2>
+
+    <div class="div_spinner_searcher" *ngIf="busy">
+      <sk-circle></sk-circle>
+    </div>
+
+    <p-growl [value]="msgs" [life]="growlLife"></p-growl>
+
+    <div class="ui-g" style="margin-top:10px;">
+      <div class="ui-g-2">
+        <p-panel header="Parameter">
+          <div style="display: flex;">
+            <div class="ui-g ui-g-nopad">
+              <div class="ui-g-8" style="text-align: left; margin-top: 4px">
+                <label for="inputCandidates">Max. Kandidaten:</label>
+              </div>
+              <div class="ui-g-4">
+                <input type="number" pInputText class="input_params"
+                                     [(ngModel)]="maxCandidates"
+                                     [max]="MAX_CANDIDATES"
+                                     [min]="MIN_CANDIDATES"
+                                     id="inputCandidates"
+                                     required/>
+              </div>
+              <div class="ui-g-8" style="text-align: left; margin-top: 4px">
+                <label for="inputScore">Min. Score (%):</label>
+              </div>
+              <div class="ui-g-4">
+                <input type="number" pInputText class="input_params"
+                                     [(ngModel)]="minScore"
+                                     [max]="MAX_SCORE"
+                                     [min]="MIN_SCORE"
+                                     id="inputScore"/>
+              </div>
+              <div class="ui-g-8" style="text-align: left; margin-top: 4px">
+                <label for="inputAge">Min. Alter:</label>
+              </div>
+              <div class="ui-g-4">
+                <input type="number" pInputText class="input_params"
+                                     [(ngModel)]="minAge"
+                                     [max]="MAX_AGE"
+                                     [min]="MIN_AGE"
+                                     id="inputAge"/>
+              </div>
+              <div class="ui-g-8" style="text-align: left; margin-top: 4px">
+                <label for="inputGender">Geschlecht:</label>
+              </div>
+              <div class="ui-g-4">
+                <p-dropdown inputId="inputGender" [options]="gender"
+                                                  [autoWidth]="false"
+                                                  [style]="{'width':'63px'}"
+                                                  [(ngModel)]="selectedGender">
+                </p-dropdown>
+              </div>
+              <div class="ui-g-12" style="text-align: left; margin-top: 4px">
+                <label for="inputNation">Staatsangehörigkeit:</label>
+              </div>
+              <div class="ui-g-12">
+                <p-dropdown inputId="inputNation" [options]="nationalities"
+                                                  [autoWidth]="false"
+                                                  [style]="{'width':'240px'}"
+                                                  [(ngModel)]="selectedNationality">
+                </p-dropdown>
+              </div>
+            </div>
+          </div>
+        </p-panel>
+
+        <p-panel (keydown)="updateSelectionOnScroll($event)" header="{{'label.Matches' | translate}}&nbsp;PKZ" tabindex="0">
+          <p-listbox (onChange)="onChangedIncidentMatch($event)" [(ngModel)]="selectedCaseId" [listStyle]="{'max-height':'510px'}"
+                     [options]="relatedCases" [style]="{'width':'100%'}"></p-listbox>
+        </p-panel>
+      </div>
+
+      <!-- IMAGE TRANSFORMER KOMPONENTA - Sem si užívateľ môže prenášať obrázky -->
+      <div class="ui-g-10">
+        <app-image-transformer #imageTransformer
+                               [inSearchTab]="true"
+                               [compareDataHolderService]="compareDataHolderService"
+                               [annotateReqFun]="annotateReq"
+                               [eyesAnnotatedFun]="eyesAnnotatedFun">
+        </app-image-transformer>
+      </div>
+    </div>
+
+    <div *ngIf='exportEnabled'>
+      <button pButton class='jsman'
+              type="button"
+              label="Herunterladen (PDF ohne Trefferwert)"
+              (click)="exportSingle(false)"
+              [ngStyle]="getComponentPos(0)"></button>
+      <button pButton class='jsman'
+              type="button"
+              label="Alle herunterladen (Excel)"
+              (click)="exportBulk()"
+              [ngStyle]="getComponentPos(1)"></button>
+      <button pButton class='jsman'
+              type="button"
+              label="Herunterladen (PDF mit Trefferwert)"
+              (click)="exportSingle(true)"
+              [ngStyle]="getComponentPos(2)"></button>
+      <p-checkbox class='jsman'
+                  binary="true"
+                  label="mit Benutzernamen"
+                  [(ngModel)]="exportFullName"
+                  [ngStyle]="getComponentPos(3)"></p-checkbox>
+    </div>
+  </div>
+</div>

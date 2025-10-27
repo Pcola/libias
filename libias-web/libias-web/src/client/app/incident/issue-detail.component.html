@@ -1,0 +1,21 @@
+<div class="container normal-text">
+  <div class="inner-container">
+
+    <h1 class="page-title">{{'label.ImageDetail' | translate}}</h1>
+
+    <div class="div_spinner" *ngIf="busy">
+      <sk-circle></sk-circle>
+    </div>
+
+    <p-growl [value]="msgs" [life]="growlLife"></p-growl>
+
+    <div class="ui-g-3" style="padding-left: 0 !important;">
+      <div class="ui-g-8 " style="padding-left: 0" >
+        <button pButton type="button " icon="fa-chevron-left " label="{{ 'button.Abort' | translate}} " style="width: 100%; " (click)="actionBack()"></button>
+      </div>
+    </div>
+
+    <div id="imgcmp"> </div>
+
+  </div>
+</div>
