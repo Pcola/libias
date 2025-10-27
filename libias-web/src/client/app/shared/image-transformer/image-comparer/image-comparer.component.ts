@@ -58,6 +58,8 @@ export class ImageComparerComponent extends BaseTransformerComponent implements 
 
     this.slideCanvas = <HTMLCanvasElement>document.getElementById('canvasSlide');
     this.contextSlide = this.slideCanvas.getContext('2d');
+    this.slideCanvas.style.pointerEvents = 'auto';
+    this.slideCanvas.style.cursor = 'pointer';
 
     this.tempCanvas = <HTMLCanvasElement>document.getElementById('canvasTmp');
     this.contextTmp = this.tempCanvas.getContext('2d');
@@ -99,26 +101,26 @@ export class ImageComparerComponent extends BaseTransformerComponent implements 
     }
   };
 
-  mouseMove(evt: { clientX: number; clientY: number; }) {
+  mouseMove(evt: MouseEvent) {
     const x = (evt.clientX - this.rect.left - this.bw);
     const y = (evt.clientY - this.rect.top - this.bw);
     this.sliders.mouseMove(x, y);
     this.update();
   }
 
-  mouseDown(evt: { clientX: number; clientY: number; }) {
+  mouseDown(evt: MouseEvent) {
     const x = evt.clientX - this.rect.left - this.bw;
     const y = evt.clientY - this.rect.top - this.bw;
     this.sliders.mouseDown(x, y);
   }
 
-  mouseUp(evt: { clientX: number; clientY: number; }) {
+  mouseUp(evt: MouseEvent) {
     const x = evt.clientX - this.rect.left - this.bw;
     const y = evt.clientY - this.rect.top - this.bw;
     this.sliders.mouseUp(x, y);
   }
 
-  mouseOut(evt: { clientX: number; clientY: number; }) {
+  mouseOut(evt: MouseEvent) {
     const x = evt.clientX - this.rect.left - this.bw;
     const y = evt.clientY - this.rect.top - this.bw;
     this.sliders.mouseUp(x, y);

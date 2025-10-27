@@ -82,10 +82,14 @@
         </p-panel>
       </div>
 
+      <!-- IMAGE TRANSFORMER KOMPONENTA - Sem si užívateľ môže prenášať obrázky -->
       <div class="ui-g-10">
-        <div class="ui-g">
-          <div id="imgcmp"></div>
-        </div>
+        <app-image-transformer #imageTransformer
+                               [inSearchTab]="true"
+                               [compareDataHolderService]="compareDataHolderService"
+                               [annotateReqFun]="annotateReq"
+                               [eyesAnnotatedFun]="eyesAnnotatedFun">
+        </app-image-transformer>
       </div>
     </div>
 

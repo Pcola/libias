@@ -94,7 +94,8 @@ export class ImgManComponent extends BaseTransformerComponent implements AfterVi
     this.tableVisible = this.inSearchTab;
 
     if (this.inSearchTab) {
-      this.id === 1 ? this.title = this.translate.instant('label.ResultImageTitle') : this.title = this.translate.instant('label.SearchImageTitle');
+      this.enableDrop = (this.id === 1) ? true : false;
+      this.id === 1 ? this.title = this.translate.instant('label.SearchImageTitle') : this.title = this.translate.instant('label.ResultImageTitle');
     } else {
       this.enableDrop = true;
       this.title = 'Bild ' + this.id;
@@ -257,10 +258,10 @@ export class ImgManComponent extends BaseTransformerComponent implements AfterVi
 
     if (this.enableDrop) {
       const file = evt.dataTransfer.files[0];
-      if (file.type.indexOf('image/') === 0) {
+      if (file && file.type && file.type.indexOf('image/') === 0) {
         this.reader.readAsDataURL(file);
-      }
-    }
+      } 
+    } 
   }
 
   resetCanvas() {

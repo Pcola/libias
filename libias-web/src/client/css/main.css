@@ -56,11 +56,11 @@ textarea {
 }
 
 .column-header {
-	font-weight: bold !important;
+  font-weight: bold !important;
 }
 
 .dateTimeField input {
-   width:150px;
+  width: 150px;
 }
 
 .header-container {
@@ -113,7 +113,7 @@ textarea {
   font-size: 28px;
   color: #0066A1;
   margin-top: 20px;
-  margin-bottom:20px;
+  margin-bottom: 20px;
 }
 
 .page-subtitle1 {
@@ -121,7 +121,7 @@ textarea {
   font-size: 24px;
   color: #000000;
   margin-top: 10px;
-  margin-bottom:10px;
+  margin-bottom: 10px;
 }
 
 .page-subtitle2 {
@@ -215,12 +215,12 @@ table.personData tr:hover td {
 }
 
 .top-bottom-padding-4 {
-  padding-top: 4 !important;
-  padding-bottom: 4 !important;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
 }
 
 .top-padding-2 {
-  padding-top: 2 !important;
+  padding-top: 2px !important;
   padding-bottom: 0 !important;
 }
 
@@ -316,7 +316,6 @@ table.personData tr:hover td {
   -moz-box-shadow: none;
   -webkit-box-shadow: none;
   box-shadow: none;
-
   border-color: transparent !important;
   outline: 0.125em solid #0066A1 !important;
 }
@@ -325,7 +324,6 @@ table.personData tr:hover td {
   -moz-box-shadow: none;
   -webkit-box-shadow: none;
   box-shadow: none;
-
   border-color: transparent !important;
   outline: 0.125em solid #0066A1 !important;
   z-index: 1;
@@ -344,25 +342,215 @@ table.personData tr:hover td {
 }
 
 .ui-column-title, .ui-widget-header {
-	font-weight:  bold;
+  font-weight: bold;
 }
 
 .ui-paginator-page.ui-state-active {
-	border-color: darkblue !important;
+  border-color: darkblue !important;
 }
 
 .ui-paginator-page:focus {
-    background: #2399e5 !important;
-    color: white !important;
-	border: 2px darkblue solid;
+  background: #2399e5 !important;
+  color: white !important;
+  border: 2px darkblue solid;
 }
 
 .ui-paginator a:focus {
-	background-color: #2399e5 !important;
-	color: white !important;
-	border: 2px darkblue solid;
+  background-color: #2399e5 !important;
+  color: white !important;
+  border: 2px darkblue solid;
 }
 
-.ui-g-5, .ui-g-4 {
-	padding: 0.8em 0.5em 0.5em 0.5em;
+/* UI Grid system */
+.ui-g {
+  display: flex;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+}
+
+.ui-g::after {
+  clear: both;
+  content: "";
+  display: table;
+}
+
+.ui-g-nopad {
+  padding: 0 !important;
+}
+
+.ui-g-1, .ui-g-2, .ui-g-3, .ui-g-4, .ui-g-5, .ui-g-6,
+.ui-g-7, .ui-g-8, .ui-g-9, .ui-g-10, .ui-g-11, .ui-g-12 {
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  padding: 0.5em;
+}
+
+.ui-g-1 { width: 8.3333%; }
+.ui-g-2 { width: 16.6667%; }
+.ui-g-3 { width: 25%; }
+.ui-g-4 { width: 33.3333%; }
+.ui-g-5 { width: 41.6667%; }
+.ui-g-6 { width: 50%; }
+.ui-g-7 { width: 58.3333%; }
+.ui-g-8 { width: 66.6667%; }
+.ui-g-9 { width: 75%; }
+.ui-g-10 { width: 83.3333%; }
+.ui-g-11 { width: 91.6667%; }
+.ui-g-12 { width: 100%; }
+
+/* Flexbox utility classes */
+.flex {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.flow-root {
+  display: flow-root;
+}
+
+.rel {
+  position: relative;
+}
+
+.full-w {
+  width: 100%;
+}
+
+.block {
+  display: block;
+}
+
+.centered-grid {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.inline-grid-expanded {
+  display: block;
+  width: 100%;
+}
+
+.inline-grid-expanded > div {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.flex-space {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+/* Canvas positioning - OPRAVENÉ pre drag and drop */
+.base {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  /* ODSTRÁNENÉ pointer-events: none; aby fungoval drag and drop */
+}
+
+.overlay2 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.overlay3 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.bordered {
+  border: 1px solid #00bfff;
+}
+
+/* Image manipulation controls */
+.jsman {
+  cursor: pointer;
+  display: inline-block;
+}
+
+.jsman_slider {
+  width: 100%;
+  cursor: pointer;
+}
+
+.img-btn-small {
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
+.img-btn-large {
+  width: 45px;
+  height: 45px;
+  cursor: pointer;
+  object-fit: contain;
+  margin: 2px;
+  vertical-align: middle;
+}
+
+/* Button utilities */
+.button-fill-parent {
+  width: 100%;
+}
+
+.button-fill-parent > * {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+/* PrimeNG spacing utilities */
+.p-mt-2 {
+  margin-top: 0.5rem !important;
+}
+
+.p-mb-2 {
+  margin-bottom: 0.5rem !important;
+}
+
+.p-ml-auto {
+  margin-left: auto !important;
+}
+
+.p-mr-auto {
+  margin-right: auto !important;
+}
+
+.p-button-rounded {
+  border-radius: 50% !important;
+}
+
+.p-grid {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.p-flex-column {
+  flex-direction: column;
+}
+
+.p-col-padding {
+  padding: 0.5rem;
 }
