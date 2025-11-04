@@ -1,6 +1,7 @@
 package sk.atos.fri.rest.service;
 
 import com.cognitec.AnalyzePortraitResponse;
+import com.cognitec.FindFacesResponse;
 import com.cognitec.VerificationPortraitsResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -126,4 +127,25 @@ public class CognitecController {
     }
   }
 
+  @RequestMapping(path = "/findFaces",
+          method = RequestMethod.POST,
+          produces = MediaType.APPLICATION_JSON_VALUE)
+  public FindFacesResponse findFaces(@RequestBody AnalyzePortraitRequest request, HttpServletRequest httpServletRequest) {
+    String username = null;
+    try {
+      username = httpServletRequest.getUserPrincipal().getName();
+      LOG.info(username, "Finding faces in image");
+      return cognitecWSClient.findFaces(request.getImg());
+    } catch (Exception e) {
+      String errMsg = e.getMessage().toLowerCase();
+      if (errMsg.contains("error processing portrait image")) {
+        LOG.error(username, Error.valueOf("Error processing portrait image"));
+        LOG.info(username, "Response = " + e.getMessage());
+        return new FindFacesResponse();
+      } else {
+        LOG.error(username, Error.valueOf("Error getting Cognitec response"), e);
+        throw e;
+      }
+    }
+  }
 }

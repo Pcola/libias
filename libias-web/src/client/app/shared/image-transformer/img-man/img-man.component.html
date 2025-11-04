@@ -95,35 +95,57 @@
       </div>
     </div>
   </div>
-
-  <!-- Táto časť je kľúčová - ikony musia byť v jednom riadku -->
   <div class="flex-space p-mt-2" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
     <img (click)="annotateReq()"
-         [src]="'assets/images/eye_position.jpg'"
+         [src]="'assets/images/eye_position.png'"
          alt=""
          class="jsman img-btn-large"
          title="Augenposition automatisch setzen"
          style="cursor: pointer; width: 36px; height: 36px;">
     <img (click)="setLeftEye()"
-         [src]="'assets/images/left_eye.jpg'"
+         [src]="'assets/images/left_eye.png'"
          alt=""
          class="jsman img-btn-large"
          title="Das linke Auge händisch markieren"
          style="cursor: pointer; width: 36px; height: 36px;">
     <img (click)="setRightEye()"
-         [src]="'assets/images/right_eye.jpg'"
+         [src]="'assets/images/right_eye.png'"
          alt=""
          class="jsman img-btn-large"
          title="Das rechte Auge händisch markieren"
          style="cursor: pointer; width: 36px; height: 36px;">
+    <img (click)="setNose()"
+         [src]="'assets/images/nose.png'"
+         alt=""
+         class="jsman img-btn-large"
+         title="Die Nasenspitze händisch markieren"
+         style="cursor: pointer; width: 36px; height: 36px;">
+    <img (click)="setLeftMouthCorner()"
+         [src]="'assets/images/left_corner.png'"
+         alt=""
+         class="jsman img-btn-large"
+         title="Die linke Mundecke händisch markieren"
+         style="cursor: pointer; width: 36px; height: 36px;">
+    <img (click)="setRightMouthCorner()"
+         [src]="'assets/images/right_corner.png'"
+         alt=""
+         class="jsman img-btn-large"
+         title="Die rechte Mundecke händisch markieren"
+         style="cursor: pointer; width: 36px; height: 36px;">
+    <img (click)="setBoundingBox()"
+         [src]="'assets/images/bounding-box.png'"
+         alt=""
+         class="jsman img-btn-large"
+         title="Bounding box ručne nastaviť"
+         style="cursor: pointer; width: 36px; height: 36px;">
     <img (click)="reDrawAnnotated()"
-         [src]="'assets/images/normalization.jpg'"
+         [src]="'assets/images/normalization.png'"
          alt=""
          class="jsman img-btn-large"
          title="Bild normalisieren"
          style="cursor: pointer; width: 36px; height: 36px;">
     <img (click)="resetCanvas()"
-         [src]="'assets/images/reset.jpg'"
+         [src]="'assets/images/reset.png'"
          alt=""
          class="jsman img-btn-large"
          title="Bild zurücksetzen"
@@ -134,7 +156,7 @@
     <label>Pixel zwischen den Augen: {{betweenEyesPixels}}</label>
   </div>
 
-  <div *ngIf="tableVisible"
+  <!-- <div *ngIf="tableVisible"
        class="p-mt-2">
     <table class="personal-info-table">
       <tr *ngFor="let data of tableData">
@@ -142,5 +164,5 @@
         <td>{{data.value}}</td>
       </tr>
     </table>
-  </div>
+  </div> -->
 </div>

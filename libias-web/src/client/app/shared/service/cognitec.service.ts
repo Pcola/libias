@@ -12,6 +12,7 @@ import {
 
 import { ACCEPT_JSON, ACCEPT_XML, APPLICATION_PDF, CONTENT_TYPE_JSON } from '../constants';
 import { LIBIAS_REST_URL } from '../config/env.config';
+import { FindFacesResponse } from '../model/cognitec/findFaces-response.model';
 
 @Injectable()
 export class CognitecService {
@@ -50,4 +51,9 @@ export class CognitecService {
     return this.httpService.httpPostCall(body, LIBIAS_REST_URL + this.SERVICE_URL + '/identBinning', headers);
   }
 
+  findFaces(request: AnalyzePortraitRequest): Observable<FindFacesResponse> {
+    let headers = new Headers({ 'Accept': ACCEPT_JSON, 'Content-Type': CONTENT_TYPE_JSON });
+    let body = JSON.stringify(request);
+    return this.httpService.httpPostCall(body, LIBIAS_REST_URL + this.SERVICE_URL + '/findFaces', headers);
+  }
 }

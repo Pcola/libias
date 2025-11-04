@@ -50,32 +50,39 @@ export class ComparerComponent implements OnInit {
       }, 100);
     }
   }
+  annotateReq = (left: boolean, img: string, isCallingFirstTime: boolean = false): void => {
+  const req = new AnalyzePortraitRequest();
+  req.img = img;
+  this.busy = true;
 
-  annotateReq = (left: boolean, img: string, isCallingFirstTime: boolean): void => {
-    let req = new AnalyzePortraitRequest();
-    req.img = img;
-    this.busy = true;
+  this.cognitecService.findFaces(req).subscribe(
+    resp => {
+      this.busy = false;
 
-    this.cognitecService.analyzePortrait(req).subscribe(
-      resp => {
-        this.busy = false;
-        let portrait = resp.val.portraitCharacteristics;
-        if (portrait && portrait.leftEye && portrait.rightEye) {
-          var annotation = {
-            left: {x: portrait.rightEye.x, y: portrait.rightEye.y, set: 1},
-            right: {x: portrait.leftEye.x, y: portrait.leftEye.y, set: 1}
-          };
-
-          this.imageTransformer.loadImageAnnotated(left, annotation);
-        }
-      },
-      err => {
-        this.busy = false;
-        this.utils.showGrowl(this.msgs, GROWL_SEVERITY_ERROR, 'label.Error', 'error.CallCognitec');
-        console.error('error analyzePortrait: ' + err);
+      if (!resp.val || !resp.val.faces || !resp.val.faces[0]) {
+        return;
       }
-    );
-  }
+
+      const face = resp.val.faces[0];
+      
+      if (face.boundingBox) {
+        this.imageTransformer.annotateCanvas(left, face.boundingBox.width, 
+          face.boundingBox.height, face.boundingBox.alpha,
+          face.boundingBox.center.x, face.boundingBox.center.y, 
+          isCallingFirstTime ? 0 : 1, false);
+      }
+
+      this.imageTransformer.setAllLandmarks(left, face);
+    },
+    err => {
+      this.busy = false;
+      this.utils.showGrowl(this.msgs, GROWL_SEVERITY_ERROR, 'label.Error', 'error.CallCognitec');
+      console.error('error findFaces: ' + err);
+    }
+  );
+}
+
+  
 
   eyesAnnotated = (left: boolean, eyeObj: any): void => {
     const distance = this.imageTransformer.computeAndUpdateEyeDistance(left, eyeObj, false);

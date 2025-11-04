@@ -20,6 +20,8 @@ public class CognitecWSClientDummy extends WebServiceGatewaySupport implements I
 
     private final Random random = new Random();
 
+    private static final boolean GENERATE_MORE_FACES = true;
+
     @Autowired
     private ServerConfig serverConfig;
 
@@ -157,6 +159,117 @@ public class CognitecWSClientDummy extends WebServiceGatewaySupport implements I
             matchSet.getM().add(match);
         }
         return matchSet;
+    }
+
+    @Override
+    public FindFacesResponse findFaces(byte[] imageBytes) {
+        double randomNr = Math.random();
+        if (randomNr < 0.1) {
+            throw new RuntimeException("error processing portrait image: Unable to find enough landmarks.");
+        } else if (randomNr < 0.2) {
+            FindFacesResponse response = new FindFacesResponse();
+            response.setVal(new FaceLocations());
+            return response;
+        }
+
+        Producer producer = new Producer();
+        producer.setId("BAMF");
+        producer.setDomain(Domain.ALGO);
+
+        // Central position for returned faces (example)
+        Position positionCenter = new Position();
+        positionCenter.setX(135f);
+        positionCenter.setY(195f);
+
+        // Bounding box
+        BoundingBox boundingBox = new BoundingBox();
+        boundingBox.setCenter(positionCenter);
+        boundingBox.setWidth(220f);
+        boundingBox.setHeight(220f);
+        boundingBox.setAlpha(0.04f);
+
+        // Create landmark positions (example values close to the bbox centre)
+        Position leftEye = new Position();
+        leftEye.setX(110f + (float)(Math.random() * 20f));   // small random jitter
+        leftEye.setY(170f + (float)(Math.random() * 20f));
+
+        Position rightEye = new Position();
+        rightEye.setX(160f + (float)(Math.random() * 20f));
+        rightEye.setY(170f + (float)(Math.random() * 20f));
+
+        Position noseTip = new Position();
+        noseTip.setX(135f + (float)(Math.random() * 10f));
+        noseTip.setY(195f + (float)(Math.random() * 10f));
+
+        Position leftMouthCorner = new Position();
+        leftMouthCorner.setX(115f + (float)(Math.random() * 15f));
+        leftMouthCorner.setY(230f + (float)(Math.random() * 15f));
+
+        Position rightMouthCorner = new Position();
+        rightMouthCorner.setX(155f + (float)(Math.random() * 15f));
+        rightMouthCorner.setY(230f + (float)(Math.random() * 15f));
+
+        // Fill FaceLocation and set landmarks using OBJECT_FACTORY (JAXB elements)
+        FaceLocation faceLocation = new FaceLocation();
+        faceLocation.setProducer(producer);
+        faceLocation.setBoundingBox(boundingBox);
+        faceLocation.setConfidence(2.5f);
+
+        // IMPORTANT: use OBJECT_FACTORY.createFaceLocationX(...) so the JAXB element wrappers are present
+        faceLocation.setLeftEye(OBJECT_FACTORY.createFaceLocationLeftEye(leftEye));
+        faceLocation.setRightEye(OBJECT_FACTORY.createFaceLocationRightEye(rightEye));
+        faceLocation.setNoseTip(OBJECT_FACTORY.createFaceLocationNoseTip(noseTip));
+        faceLocation.setLeftMouthCorner(OBJECT_FACTORY.createFaceLocationLeftMouthCorner(leftMouthCorner));
+        faceLocation.setRightMouthCorner(OBJECT_FACTORY.createFaceLocationRightMouthCorner(rightMouthCorner));
+
+        FaceLocations faceLocations = new FaceLocations();
+        faceLocations.getFaces().add(faceLocation);
+
+        // Optionally generate a second face (keeps behaviour from original dummy)
+        if (GENERATE_MORE_FACES) {
+            BoundingBox boundingBox2 = new BoundingBox();
+            boundingBox2.setCenter(positionCenter);
+            boundingBox2.setWidth(230f);
+            boundingBox2.setHeight(230f);
+            boundingBox2.setAlpha(0.04f);
+
+            // second face landmarks (slightly different)
+            Position leftEye2 = new Position();
+            leftEye2.setX(105f + (float)(Math.random() * 25f));
+            leftEye2.setY(165f + (float)(Math.random() * 25f));
+
+            Position rightEye2 = new Position();
+            rightEye2.setX(165f + (float)(Math.random() * 25f));
+            rightEye2.setY(165f + (float)(Math.random() * 25f));
+
+            Position noseTip2 = new Position();
+            noseTip2.setX(135f + (float)(Math.random() * 15f));
+            noseTip2.setY(190f + (float)(Math.random() * 15f));
+
+            Position leftMouthCorner2 = new Position();
+            leftMouthCorner2.setX(105f + (float)(Math.random() * 20f));
+            leftMouthCorner2.setY(225f + (float)(Math.random() * 20f));
+
+            Position rightMouthCorner2 = new Position();
+            rightMouthCorner2.setX(165f + (float)(Math.random() * 20f));
+            rightMouthCorner2.setY(225f + (float)(Math.random() * 20f));
+
+            FaceLocation faceLocation2 = new FaceLocation();
+            faceLocation2.setProducer(producer);
+            faceLocation2.setBoundingBox(boundingBox2);
+            faceLocation2.setConfidence(1.5f);
+            faceLocation2.setLeftEye(OBJECT_FACTORY.createFaceLocationLeftEye(leftEye2));
+            faceLocation2.setRightEye(OBJECT_FACTORY.createFaceLocationRightEye(rightEye2));
+            faceLocation2.setNoseTip(OBJECT_FACTORY.createFaceLocationNoseTip(noseTip2));
+            faceLocation2.setLeftMouthCorner(OBJECT_FACTORY.createFaceLocationLeftMouthCorner(leftMouthCorner2));
+            faceLocation2.setRightMouthCorner(OBJECT_FACTORY.createFaceLocationRightMouthCorner(rightMouthCorner2));
+
+            faceLocations.getFaces().add(faceLocation2);
+        }
+
+        FindFacesResponse response = new FindFacesResponse();
+        response.setVal(faceLocations);
+        return response;
     }
 
 }

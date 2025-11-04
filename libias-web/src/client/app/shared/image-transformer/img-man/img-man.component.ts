@@ -60,7 +60,14 @@ export class ImgManComponent extends BaseTransformerComponent implements AfterVi
 
   image = new Image();
 
-  eyeObj = {left: {x: 0, y: 0, set: 0}, right: {x: 0, y: 0, set: 0}};
+  facialLandmarks = {
+    leftEye: { x: 0, y: 0, set: 0 },
+    rightEye: { x: 0, y: 0, set: 0 },
+    noseTip: { x: 0, y: 0, set: 0 },
+    leftMouthCorner: { x: 0, y: 0, set: 0 },
+    rightMouthCorner: { x: 0, y: 0, set: 0 }
+  };
+
   imgCoordinates = {x: 0, y: 0};
   sizeTemp = 0;
   t = {x: 0, y: 0};
@@ -81,6 +88,21 @@ export class ImgManComponent extends BaseTransformerComponent implements AfterVi
   title = '';
   tableVisible = false;
   tableData: any;
+
+  faceSize = {x: 0, y: 0};
+  faceCenter = {x: 0, y: 0};
+  faceAlpha = 0;
+
+  boxTopLeft = {x: 0, y: 0};
+  boxTopRight = {x: 0, y: 0};
+  boxBottomLeft = {x: 0, y: 0};
+  boxBottomRight = {x: 0, y: 0};
+
+  mirrored = false;
+
+  boundingBoxMode = 0;
+  boundingBoxFirstCorner = { x: 0, y: 0 };
+  boundingBoxClickPosition = { x: 0, y: 0 };
 
   constructor(
     private translate: TranslateService,
@@ -122,14 +144,13 @@ export class ImgManComponent extends BaseTransformerComponent implements AfterVi
     this.reader.onload = () => {
       this.image.src = this.reader.result as string;
 
-      // TODO it is only hotfix
       setTimeout(() => {
         if (!this.inSearchTab) {
           if (this.image.src !== '') {
             this.resetCanvas();
             this.annotateReqOriginal();
 
-            const image = new HTMLImageElement();
+            const image = new Image();
             image.src = this.image.src;
             const isLeftImg = this.id === 1;
             this.compareDataHolderService.hold(image, isLeftImg);
@@ -200,7 +221,11 @@ export class ImgManComponent extends BaseTransformerComponent implements AfterVi
   }
 
   getTransformation(withEyes: boolean) {
-    return new Transformation(this.scale, this.angle, this.shift.x, this.shift.y, this.brightness, this.contrast, withEyes, this.eyeObj);
+    const eyes = {
+      left: this.facialLandmarks.leftEye,
+      right: this.facialLandmarks.rightEye
+    };
+    return new Transformation(this.scale, this.angle, this.shift.x, this.shift.y, this.brightness, this.contrast, withEyes, eyes);
   }
 
   getOriginalImage() {
@@ -217,9 +242,9 @@ export class ImgManComponent extends BaseTransformerComponent implements AfterVi
 
   getAnnotatedEyes() {
     const eyes: { left: any; right: any } = { left: null, right: null };
-    if (this.eyeObj.left.set === 2 && this.eyeObj.right.set === 2) {
-      eyes.left = this.imageToCanvasCoordinatesTranslate(this.eyeObj.left);
-      eyes.right = this.imageToCanvasCoordinatesTranslate(this.eyeObj.right);
+    if (this.facialLandmarks.leftEye.set === 2 && this.facialLandmarks.rightEye.set === 2) {
+      eyes.left = this.imageToCanvasCoordinatesTranslate(this.facialLandmarks.leftEye);
+      eyes.right = this.imageToCanvasCoordinatesTranslate(this.facialLandmarks.rightEye);
     }
     return eyes;
   }
@@ -228,7 +253,7 @@ export class ImgManComponent extends BaseTransformerComponent implements AfterVi
     return this.scale;
   }
 
-  imageToCanvasCoordinatesTranslate(point: { x: number; y: number; set: number; }) {
+  imageToCanvasCoordinatesTranslate(point: { x: number; y: number; set?: number; }) {
     const centre = {x: (this.image.width / 2) - this.shift.x, y: (this.image.height / 2) + this.shift.y};
     const rotated = this.rotate(point, centre, this.angle * Math.PI / 180);
     const scaledAndShifted = {x: 0, y: 0};
@@ -247,15 +272,12 @@ export class ImgManComponent extends BaseTransformerComponent implements AfterVi
 
   setTableData(data: any) {
     this.tableVisible = true;
-
     this.tableData = data;
     this.cd.detectChanges();
   }
 
   onImageDrop(evt: { preventDefault: () => void; dataTransfer: { files: any[]; }; }) {
     evt.preventDefault();
-    // evt.stopPropagation();
-
     if (this.enableDrop) {
       const file = evt.dataTransfer.files[0];
       if (file && file.type && file.type.indexOf('image/') === 0) {
@@ -275,17 +297,24 @@ export class ImgManComponent extends BaseTransformerComponent implements AfterVi
     this.angle = 0;
     this.brightness = 0;
     this.contrast = 1;
-    this.eyeObj.right.set = 0;
-    this.eyeObj.left.set = 0;
+    
+    this.facialLandmarks = {
+      leftEye: { x: 0, y: 0, set: 0 },
+      rightEye: { x: 0, y: 0, set: 0 },
+      noseTip: { x: 0, y: 0, set: 0 },
+      leftMouthCorner: { x: 0, y: 0, set: 0 },
+      rightMouthCorner: { x: 0, y: 0, set: 0 }
+    };
+    
     this.reDraw(0, 0, 0, 0);
   }
 
   reDrawAnnotated() {
-    if (!this.eyeObj.right.set || !this.eyeObj.left.set) {
+    if (!this.facialLandmarks.rightEye.set || !this.facialLandmarks.leftEye.set) {
       return;
     }
-    const dX = this.eyeObj.right.x - this.eyeObj.left.x;
-    const dY = this.eyeObj.right.y - this.eyeObj.left.y;
+    const dX = this.facialLandmarks.rightEye.x - this.facialLandmarks.leftEye.x;
+    const dY = this.facialLandmarks.rightEye.y - this.facialLandmarks.leftEye.y;
     const bEyes = Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2));
     let alpha = Math.atan2(dY, dX);
     if (this.betweenEyes / bEyes > 100) {
@@ -295,7 +324,7 @@ export class ImgManComponent extends BaseTransformerComponent implements AfterVi
     this.angle = -alpha * 180 / Math.PI;
 
     const centre = {x: this.image.width / 2, y: this.image.height / 2};
-    const pr = this.rotate(this.eyeObj.left, centre, -alpha);
+    const pr = this.rotate(this.facialLandmarks.leftEye, centre, -alpha);
     const sx = ((this.image.width / 2) - pr.x) - (((this.canvas.width / 2) - this.fromLeft) / this.scale);
     const sy = ((this.image.height / 2) - pr.y) - (((this.canvas.height / 2) - this.fromTop) / this.scale);
     const sh = Math.sqrt(Math.pow(sx, 2) + Math.pow(sy, 2));
@@ -315,17 +344,117 @@ export class ImgManComponent extends BaseTransformerComponent implements AfterVi
       this.helpContext.clearRect(0, 0, this.width, this.height);
 
       const centre = {x: (this.image.width / 2) - this.shift.x, y: (this.image.height / 2) + this.shift.y};
-      if (this.eyeObj.left.set) {
-        const prL = this.rotate(this.eyeObj.left, centre, this.angle * Math.PI / 180);
+
+      if (this.faceSize.x > 0 && this.faceSize.y > 0) {
+        const tl = this.rotate(this.boxTopLeft, centre, this.angle * Math.PI / 180);
+        const tr = this.rotate(this.boxTopRight, centre, this.angle * Math.PI / 180);
+        const bl = this.rotate(this.boxBottomLeft, centre, this.angle * Math.PI / 180);
+        const br = this.rotate(this.boxBottomRight, centre, this.angle * Math.PI / 180);
+
+        const tlCanvas = {
+          x: (this.canvas.width / 2) - (((this.image.width / 2) - tl.x - this.shift.x) * this.scale),
+          y: (this.canvas.height / 2) - (((this.image.height / 2) - tl.y + this.shift.y) * this.scale)
+        };
+
+        const trCanvas = {
+          x: (this.canvas.width / 2) - (((this.image.width / 2) - tr.x - this.shift.x) * this.scale),
+          y: (this.canvas.height / 2) - (((this.image.height / 2) - tr.y + this.shift.y) * this.scale)
+        };
+
+        const blCanvas = {
+          x: (this.canvas.width / 2) - (((this.image.width / 2) - bl.x - this.shift.x) * this.scale),
+          y: (this.canvas.height / 2) - (((this.image.height / 2) - bl.y + this.shift.y) * this.scale)
+        };
+
+        const brCanvas = {
+          x: (this.canvas.width / 2) - (((this.image.width / 2) - br.x - this.shift.x) * this.scale),
+          y: (this.canvas.height / 2) - (((this.image.height / 2) - br.y + this.shift.y) * this.scale)
+        };
+
+        this.helpContext.beginPath();
+        this.helpContext.moveTo(tlCanvas.x, tlCanvas.y);
+        this.helpContext.lineTo(trCanvas.x, trCanvas.y);
+        this.helpContext.lineTo(brCanvas.x, brCanvas.y);
+        this.helpContext.lineTo(blCanvas.x, blCanvas.y);
+        this.helpContext.lineTo(tlCanvas.x, tlCanvas.y);
+        this.helpContext.closePath();
+        
+        this.helpContext.strokeStyle = '#FFFFFF';
+        this.helpContext.lineWidth = 2;
+        this.helpContext.stroke();
+        
+        this.helpContext.fillStyle = 'rgba(0, 255, 255, 0.1)';
+        this.helpContext.fill();
+      }
+
+      if (this.facialLandmarks.leftEye.set) {
+        const prL = this.rotate(this.facialLandmarks.leftEye, centre, this.angle * Math.PI / 180);
         const eXL = (this.canvas.width / 2) - (((this.image.width / 2) - prL.x - this.shift.x) * this.scale);
         const eYL = (this.canvas.height / 2) - (((this.image.height / 2) - prL.y + this.shift.y) * this.scale);
-        this.constructCross(eXL, eYL);
+        
+        this.helpContext.beginPath();
+        this.helpContext.arc(eXL, eYL, 6, 0, 2 * Math.PI, false);
+        this.helpContext.fillStyle = '#FF0000';
+        this.helpContext.fill();
+        this.helpContext.strokeStyle = '#FFFFFF';
+        this.helpContext.lineWidth = 2;
+        this.helpContext.stroke();
       }
-      if (this.eyeObj.right.set) {
-        const prR = this.rotate(this.eyeObj.right, centre, this.angle * Math.PI / 180);
+      
+      if (this.facialLandmarks.rightEye.set) {
+        const prR = this.rotate(this.facialLandmarks.rightEye, centre, this.angle * Math.PI / 180);
         const eXR = (this.canvas.width / 2) - (((this.image.width / 2) - prR.x - this.shift.x) * this.scale);
         const eYR = (this.canvas.height / 2) - (((this.image.height / 2) - prR.y + this.shift.y) * this.scale);
-        this.constructCross(eXR, eYR);
+        
+        this.helpContext.beginPath();
+        this.helpContext.arc(eXR, eYR, 6, 0, 2 * Math.PI, false);
+        this.helpContext.fillStyle = '#00FF00';
+        this.helpContext.fill();
+        this.helpContext.strokeStyle = '#FFFFFF';
+        this.helpContext.lineWidth = 2;
+        this.helpContext.stroke();
+      }
+
+      if (this.facialLandmarks.noseTip.set > 0) {
+        const rotated = this.rotate(this.facialLandmarks.noseTip, centre, this.angle * Math.PI / 180);
+        const x = (this.canvas.width / 2) - (((this.image.width / 2) - rotated.x - this.shift.x) * this.scale);
+        const y = (this.canvas.height / 2) - (((this.image.height / 2) - rotated.y + this.shift.y) * this.scale);
+        
+        this.helpContext.beginPath();
+        this.helpContext.arc(x, y, 6, 0, 2 * Math.PI, false);
+        this.helpContext.fillStyle = '#0000FF';
+        this.helpContext.fill();
+        this.helpContext.strokeStyle = '#FFFFFF';
+        this.helpContext.lineWidth = 2;
+        this.helpContext.stroke();
+      }
+
+      if (this.facialLandmarks.leftMouthCorner.set > 0) {
+        const rotated = this.rotate(this.facialLandmarks.leftMouthCorner, centre, this.angle * Math.PI / 180);
+        const x = (this.canvas.width / 2) - (((this.image.width / 2) - rotated.x - this.shift.x) * this.scale);
+        const y = (this.canvas.height / 2) - (((this.image.height / 2) - rotated.y + this.shift.y) * this.scale);
+        
+        this.helpContext.beginPath();
+        this.helpContext.arc(x, y, 6, 0, 2 * Math.PI, false);
+        this.helpContext.fillStyle = '#FFFF00';
+        this.helpContext.fill();
+        this.helpContext.strokeStyle = '#FFFFFF';
+        this.helpContext.lineWidth = 2;
+        this.helpContext.stroke();
+      }
+
+      if (this.facialLandmarks.rightMouthCorner.set > 0) {
+        const rotated = this.rotate(this.facialLandmarks.rightMouthCorner, centre, this.angle * Math.PI / 180);
+        const x = (this.canvas.width / 2) - (((this.image.width / 2) - rotated.x - this.shift.x) * this.scale);
+        const y = (this.canvas.height / 2) - (((this.image.height / 2) - rotated.y + this.shift.y) * this.scale);
+        
+        this.helpContext.beginPath();
+        this.helpContext.arc(x, y, 6, 0, 2 * Math.PI, false);
+        this.helpContext.fillStyle = '#FF00FF';
+        this.helpContext.fill();
+        this.helpContext.strokeStyle = '#FFFFFF';
+        this.helpContext.lineWidth = 2;
+        this.helpContext.stroke();
       }
 
       const alpha = Math.atan2(this.shift.y, this.shift.x);
@@ -351,35 +480,58 @@ export class ImgManComponent extends BaseTransformerComponent implements AfterVi
     }
   }
 
-  annotateImg(annotation: { left: { x: number; y: number; set: number; }; right: { x: number; y: number; set: number; }; }) {
-    this.eyeObj.left.x = annotation.left.x;
-    this.eyeObj.left.y = annotation.left.y;
-    this.eyeObj.right.x = annotation.right.x;
-    this.eyeObj.right.y = annotation.right.y;
-
-    this.eyeObj.left.set = annotation.left.set;
-    this.eyeObj.right.set = annotation.right.set;
+  annotateImg(annotation: { left: any; right: any; }) {
+    this.facialLandmarks.leftEye = annotation.left;
+    this.facialLandmarks.rightEye = annotation.right;
     this.reDraw(0, 0, 0, 0);
   }
 
-  annotateCanvas(annotation: any, imgType: number) {
-    if (imgType === 0) {
-      annotation.left = this.imageToCanvasCoordinatesTranslate(annotation.left);
-      annotation.right = this.imageToCanvasCoordinatesTranslate(annotation.right);
+  annotateCanvas(width: number, height: number, alpha: number, centerx: number, centery: number, imgType: number, normalize: boolean) {
+    if (imgType !== 0) {
+      const mirrorFactor = this.mirrored ? -1 : 1;
+      alpha = alpha - mirrorFactor * this.angle * Math.PI / 180;
+      width = width / this.scale;
+      height = height / this.scale;
+
+      const translated = this.translateCoordinatesToOrig(centerx, centery);
+      centerx = translated.x;
+      centery = translated.y;
     }
 
-    const centre = {x: (this.canvas.width / 2), y: (this.canvas.height / 2)};
-    const re = this.rotate(annotation.right, centre, -this.angle * Math.PI / 180);
-    const le = this.rotate(annotation.left, centre, -this.angle * Math.PI / 180);
+    this.faceSize.x = width;
+    this.faceSize.y = height;
+    this.faceCenter.x = centerx;
+    this.faceCenter.y = centery;
+    this.faceAlpha = alpha;
+    this.computeBoundingBox();
 
-    this.eyeObj.left.x = ((this.image.width / 2)) - ((((this.canvas.width / 2) - le.x) / this.scale) + this.shift.x);
-    this.eyeObj.left.y = ((this.image.height / 2)) - ((((this.canvas.height / 2) - le.y) / this.scale) - this.shift.y);
-    this.eyeObj.right.x = ((this.image.width / 2)) - ((((this.canvas.width / 2) - re.x) / this.scale) + this.shift.x);
-    this.eyeObj.right.y = ((this.image.height / 2)) - ((((this.canvas.height / 2) - re.y) / this.scale) - this.shift.y);
+    if (normalize) {
+      this.reDrawAnnotated();
+    } else {
+      this.reDraw(0, 0, 0, 0);
+    }
+  }
 
-    this.eyeObj.left.set = annotation.left.set;
-    this.eyeObj.right.set = annotation.right.set;
-    this.reDraw(0, 0, 0, 0);
+  private translateCoordinatesToOrig(x: number, y: number) {
+    const center = {x: (this.image.width / 2) - this.shift.x, y: (this.image.height / 2) + this.shift.y};
+    const mirrorFactor = this.mirrored ? -1 : 1;
+    const translated = {x: 0, y: 0};
+    translated.x = this.image.width / 2 - (this.canvas.width / 2 - x) / this.scale * mirrorFactor - this.shift.x;
+    translated.y = this.image.height / 2 - (this.canvas.height / 2 - y) / this.scale + this.shift.y;
+    return this.rotate(translated, center, -this.angle * Math.PI / 180);
+  }
+
+  private computeBoundingBox() {
+    if (!this.faceSize.x || !this.faceSize.y) {
+      return;
+    }
+
+    const dx = this.faceSize.x / 2;
+    const dy = this.faceSize.y / 2;
+    this.boxTopLeft = this.rotate({x: this.faceCenter.x - dx, y: this.faceCenter.y - dy}, this.faceCenter, this.faceAlpha);
+    this.boxTopRight = this.rotate({x: this.faceCenter.x + dx, y: this.faceCenter.y - dy}, this.faceCenter, this.faceAlpha);
+    this.boxBottomLeft = this.rotate({x: this.faceCenter.x - dx, y: this.faceCenter.y + dy}, this.faceCenter, this.faceAlpha);
+    this.boxBottomRight = this.rotate({x: this.faceCenter.x + dx, y: this.faceCenter.y + dy}, this.faceCenter, this.faceAlpha);
   }
 
   annotateReq() {
@@ -391,35 +543,62 @@ export class ImgManComponent extends BaseTransformerComponent implements AfterVi
   }
 
   setLeftEye() {
-    if (this.eyeObj.left.set) {
-      if (this.eyeObj.right.x === this.imgCoordinates.x && this.eyeObj.right.y === this.imgCoordinates.y) {
+    if (this.facialLandmarks.leftEye.set) {
+      if (this.facialLandmarks.rightEye.x === this.imgCoordinates.x && this.facialLandmarks.rightEye.y === this.imgCoordinates.y) {
         return;
       }
     }
-    this.eyeObj.left.x = this.imgCoordinates.x;
-    this.eyeObj.left.y = this.imgCoordinates.y;
-    this.eyeObj.left.set = 2;
+    this.facialLandmarks.leftEye.x = this.imgCoordinates.x;
+    this.facialLandmarks.leftEye.y = this.imgCoordinates.y;
+    this.facialLandmarks.leftEye.set = 2;
     this.reDraw(0, 0, 0, 0);
 
-    if (this.eyeObj.right.set === 2) {
-      this.eyesAnnotatedFun(this.id === 1, this.eyeObj);
+    if (this.facialLandmarks.rightEye.set === 2) {
+      this.eyesAnnotatedFun(this.id === 1, {
+        left: this.facialLandmarks.leftEye,
+        right: this.facialLandmarks.rightEye
+      });
     }
   }
 
   setRightEye() {
-    if (this.eyeObj.right.set) {
-      if (this.eyeObj.left.x === this.imgCoordinates.x && this.eyeObj.left.y === this.imgCoordinates.y) {
+    if (this.facialLandmarks.rightEye.set) {
+      if (this.facialLandmarks.leftEye.x === this.imgCoordinates.x && this.facialLandmarks.leftEye.y === this.imgCoordinates.y) {
         return;
       }
     }
-    this.eyeObj.right.x = this.imgCoordinates.x;
-    this.eyeObj.right.y = this.imgCoordinates.y;
-    this.eyeObj.right.set = 2;
+    this.facialLandmarks.rightEye.x = this.imgCoordinates.x;
+    this.facialLandmarks.rightEye.y = this.imgCoordinates.y;
+    this.facialLandmarks.rightEye.set = 2;
     this.reDraw(0, 0, 0, 0);
 
-    if (this.eyeObj.left.set === 2) {
-      this.eyesAnnotatedFun(this.id === 1, this.eyeObj);
+    if (this.facialLandmarks.leftEye.set === 2) {
+      this.eyesAnnotatedFun(this.id === 1, {
+        left: this.facialLandmarks.leftEye,
+        right: this.facialLandmarks.rightEye
+      });
     }
+  }
+
+  setNose() {
+    this.facialLandmarks.noseTip.x = this.imgCoordinates.x;
+    this.facialLandmarks.noseTip.y = this.imgCoordinates.y;
+    this.facialLandmarks.noseTip.set = 2;
+    this.reDraw(0, 0, 0, 0);
+  }
+
+  setLeftMouthCorner() {
+    this.facialLandmarks.leftMouthCorner.x = this.imgCoordinates.x;
+    this.facialLandmarks.leftMouthCorner.y = this.imgCoordinates.y;
+    this.facialLandmarks.leftMouthCorner.set = 2;
+    this.reDraw(0, 0, 0, 0);
+  }
+
+  setRightMouthCorner() {
+    this.facialLandmarks.rightMouthCorner.x = this.imgCoordinates.x;
+    this.facialLandmarks.rightMouthCorner.y = this.imgCoordinates.y;
+    this.facialLandmarks.rightMouthCorner.set = 2;
+    this.reDraw(0, 0, 0, 0);
   }
 
   mouseMove(evt: { clientX: number; clientY: number; }) {
@@ -453,10 +632,75 @@ export class ImgManComponent extends BaseTransformerComponent implements AfterVi
   }
 
   mouseDown(evt: MouseEvent) {
-    this.mouse.down = 1;
-    this.mouse.lastX = evt.clientX - this.rect.left;
-    this.mouse.lastY = evt.clientY - this.rect.top;
+  if (this.boundingBoxMode > 0) {
+    this.reDraw(0, 0, 0, 0);
+    
+    this.boundingBoxClickPosition.x = evt.clientX - this.rect.left;
+    this.boundingBoxClickPosition.y = evt.clientY - this.rect.top;
+    
+    console.log('Canvas click position:', this.boundingBoxClickPosition);
+    
+    this.handleBoundingBoxClick();
+    return;
   }
+  
+  this.mouse.down = 1;
+  this.mouse.lastX = evt.clientX - this.rect.left;
+  this.mouse.lastY = evt.clientY - this.rect.top;
+}
+
+private handleBoundingBoxClick() {
+  const canvasX = this.boundingBoxClickPosition.x;
+  const canvasY = this.boundingBoxClickPosition.y;
+  
+  const canvasCenterX = this.canvas.width / 2;
+  const canvasCenterY = this.canvas.height / 2;
+  
+  const offsetX = canvasX - canvasCenterX;
+  const offsetY = canvasY - canvasCenterY;
+  
+  const clickX = this.imgCoordinates.x + (offsetX / this.scale);
+  const clickY = this.imgCoordinates.y + (offsetY / this.scale);
+  
+  console.log('Canvas click:', {x: canvasX, y: canvasY});
+  console.log('Image click coords:', {x: clickX, y: clickY});
+  
+  this.helpContext.fillStyle = 'rgba(255, 0, 0, 0.8)';
+  this.helpContext.beginPath();
+  this.helpContext.arc(canvasX, canvasY, 8, 0, 2 * Math.PI);
+  this.helpContext.fill();
+  
+  if (this.boundingBoxMode === 1) {
+    this.boundingBoxFirstCorner.x = clickX;
+    this.boundingBoxFirstCorner.y = clickY;
+    
+    console.log('1. bod:', this.boundingBoxFirstCorner);
+    
+    this.boundingBoxMode = 2;
+    this.helpCanvas.style.cursor = 'crosshair';
+  } else if (this.boundingBoxMode === 2) {
+    const secondCorner = { x: clickX, y: clickY };
+    
+    const minX = Math.min(this.boundingBoxFirstCorner.x, secondCorner.x);
+    const maxX = Math.max(this.boundingBoxFirstCorner.x, secondCorner.x);
+    const minY = Math.min(this.boundingBoxFirstCorner.y, secondCorner.y);
+    const maxY = Math.max(this.boundingBoxFirstCorner.y, secondCorner.y);
+    
+    this.faceCenter.x = (minX + maxX) / 2;
+    this.faceCenter.y = (minY + maxY) / 2;
+    this.faceSize.x = maxX - minX;
+    this.faceSize.y = maxY - minY;
+    this.faceAlpha = 0;
+    
+    this.computeBoundingBox();
+    
+    this.boundingBoxMode = 0;
+    this.helpCanvas.style.cursor = 'pointer';
+    console.log('✅ Box hotovo!');
+    
+    this.reDraw(0, 0, 0, 0);
+  }
+}
 
   disableMouse() {
     this.mouse.down = 0;
@@ -524,29 +768,26 @@ export class ImgManComponent extends BaseTransformerComponent implements AfterVi
     this.shift.y = transformation.shiftY;
     this.brightness = transformation.rotation;
     this.contrast = transformation.contrast;
-    this.eyeObj.right.set = 0;
-    this.eyeObj.left.set = 0;
+    
+    this.facialLandmarks = {
+      leftEye: { x: 0, y: 0, set: 0 },
+      rightEye: { x: 0, y: 0, set: 0 },
+      noseTip: { x: 0, y: 0, set: 0 },
+      leftMouthCorner: { x: 0, y: 0, set: 0 },
+      rightMouthCorner: { x: 0, y: 0, set: 0 }
+    };
 
     if (transformation.lset && transformation.lx && transformation.ly) {
-      this.eyeObj.left.set = transformation.lset;
-      this.eyeObj.left.x = transformation.lx;
-      this.eyeObj.left.y = transformation.ly;
-    } else {
-      this.eyeObj.left.set = 0;
-      this.eyeObj.left.x = 0;
-      this.eyeObj.left.y = 0;
+      this.facialLandmarks.leftEye.set = transformation.lset;
+      this.facialLandmarks.leftEye.x = transformation.lx;
+      this.facialLandmarks.leftEye.y = transformation.ly;
     }
 
     if (transformation.rset && transformation.rx && transformation.ry) {
-      this.eyeObj.right.set = transformation.rset;
-      this.eyeObj.right.x = transformation.rx;
-      this.eyeObj.right.y = transformation.ry;
-    } else {
-      this.eyeObj.right.set = 0;
-      this.eyeObj.right.x = 0;
-      this.eyeObj.right.y = 0;
+      this.facialLandmarks.rightEye.set = transformation.rset;
+      this.facialLandmarks.rightEye.x = transformation.rx;
+      this.facialLandmarks.rightEye.y = transformation.ry;
     }
-
 
     this.reDraw(0, 0, 0, 0);
   }
@@ -589,22 +830,128 @@ export class ImgManComponent extends BaseTransformerComponent implements AfterVi
     };
   }
 
-  private constructCross(x: number, y: number) {
-    this.helpContext.strokeStyle = '#ff0000';
-    this.helpContext.setLineDash([100, 0]);
-    this.helpContext.lineWidth = 4;
-    this.helpContext.beginPath();
-    this.helpContext.moveTo(x - 20, y - 20);
-    this.helpContext.lineTo(x + 20, y + 20);
-    this.helpContext.moveTo(x - 20, y + 20);
-    this.helpContext.lineTo(x + 20, y - 20);
-    this.helpContext.stroke();
-    this.helpContext.closePath();
-    this.helpContext.lineWidth = 1;
+  onDragOver(evt: DragEvent) {
+    evt.preventDefault();
+    evt.stopPropagation();
   }
 
-  onDragOver(evt: DragEvent) {
-  evt.preventDefault();
-  evt.stopPropagation();
+  setAllLandmarksFromFaceLocation(faceLocation: any) {
+  console.log('Incoming faceLocation:', faceLocation);
+  
+  // HELPER FUNKCIA - EXTRAHOVAŤ POSITION Z JAXB ELEMENTU
+  const extractPosition = (jaxbElement: any) => {
+    if (!jaxbElement) return null;
+    // Ak je to JAXBElement (má .value), vem .value.value
+    if (jaxbElement.value) {
+      return jaxbElement.value;
+    }
+    // Inak vem priamo
+    return jaxbElement;
+  };
+  
+  // SKONTROLUJ ČI SÚ LANDMARKS NULL
+  const leftEyePos = extractPosition(faceLocation.leftEye);
+  const rightEyePos = extractPosition(faceLocation.rightEye);
+  
+  const hasLandmarks = leftEyePos && rightEyePos && leftEyePos.x !== undefined && rightEyePos.x !== undefined;
+  
+  if (!hasLandmarks && faceLocation.boundingBox) {
+    // Landmarks sú null - nastav len bounding box
+    const bbox = faceLocation.boundingBox;
+    
+    this.faceCenter.x = bbox.center.x;
+    this.faceCenter.y = bbox.center.y;
+    this.faceSize.x = bbox.width;
+    this.faceSize.y = bbox.height;
+    this.faceAlpha = bbox.alpha || 0;
+    
+    console.log('✅ Box nastavený z backendu:', {
+      center: this.faceCenter,
+      size: this.faceSize,
+      alpha: this.faceAlpha
+    });
+    
+    // RESETUJ landmarks
+    this.facialLandmarks = {
+      leftEye: { x: 0, y: 0, set: 0 },
+      rightEye: { x: 0, y: 0, set: 0 },
+      noseTip: { x: 0, y: 0, set: 0 },
+      leftMouthCorner: { x: 0, y: 0, set: 0 },
+      rightMouthCorner: { x: 0, y: 0, set: 0 }
+    };
+    
+    this.computeBoundingBox();
+    this.helpLines = true;
+    this.reDraw(0, 0, 0, 0);
+    this.changeHelpLinesVisibility(false);
+    return;
+  }
+  
+  // AK MÁŠ LANDMARKS, NASTAV ICH
+  if (leftEyePos && leftEyePos.x !== undefined) {
+    this.facialLandmarks.leftEye = { 
+      x: leftEyePos.x, 
+      y: leftEyePos.y, 
+      set: 1 
+    };
+    console.log('✅ LeftEye set:', this.facialLandmarks.leftEye);
+  }
+  
+  if (rightEyePos && rightEyePos.x !== undefined) {
+    this.facialLandmarks.rightEye = { 
+      x: rightEyePos.x, 
+      y: rightEyePos.y, 
+      set: 1 
+    };
+    console.log('✅ RightEye set:', this.facialLandmarks.rightEye);
+  }
+  
+  const noseTipPos = extractPosition(faceLocation.noseTip);
+  if (noseTipPos && noseTipPos.x !== undefined) {
+    this.facialLandmarks.noseTip = { 
+      x: noseTipPos.x, 
+      y: noseTipPos.y, 
+      set: 1 
+    };
+    console.log('✅ NoseTip set:', this.facialLandmarks.noseTip);
+  }
+  
+  const leftMouthPos = extractPosition(faceLocation.leftMouthCorner);
+  if (leftMouthPos && leftMouthPos.x !== undefined) {
+    this.facialLandmarks.leftMouthCorner = { 
+      x: leftMouthPos.x, 
+      y: leftMouthPos.y, 
+      set: 1 
+    };
+    console.log('✅ LeftMouth set:', this.facialLandmarks.leftMouthCorner);
+  }
+  
+  const rightMouthPos = extractPosition(faceLocation.rightMouthCorner);
+  if (rightMouthPos && rightMouthPos.x !== undefined) {
+    this.facialLandmarks.rightMouthCorner = { 
+      x: rightMouthPos.x, 
+      y: rightMouthPos.y, 
+      set: 1 
+    };
+    console.log('✅ RightMouth set:', this.facialLandmarks.rightMouthCorner);
+  }
+  
+  console.log('✅ All landmarks after set:', this.facialLandmarks);
+  
+  this.helpLines = true;
+  this.reDraw(0, 0, 0, 0);
+  this.changeHelpLinesVisibility(false);
 }
+
+  setBoundingBox() {
+    if (this.boundingBoxMode === 0) {
+      this.boundingBoxMode = 1;
+      this.helpCanvas.style.cursor = 'crosshair';
+      console.log('Bounding Box Mode: Klikni na 1. bod');
+    } else {
+      this.boundingBoxMode = 0;
+      this.helpCanvas.style.cursor = 'pointer';
+      console.log('Bounding Box Mode: Zrušené');
+    }
+  }
 }

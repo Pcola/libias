@@ -20,4 +20,6 @@ public interface ICognitecWSClient {
     VerificationPortraitsResponse verificationPortraits(byte[] imageABytes, byte[] imageBBytes, String authName);
 
     IdentBinningResponse identificationBinning(byte[] imageBytes, String authName, int maxMatches, int minScore);
+
+    FindFacesResponse findFaces(byte[] imageBytes);
 }

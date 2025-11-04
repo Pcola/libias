@@ -114,8 +114,10 @@ export class ImageTransformerComponent extends BaseTransformerComponent implemen
     left ? this.imgMan1.loadScaledImage(src, transformation) : this.imgMan2.loadScaledImage(src, transformation);
   }
 
-  annotateCanvas(left: boolean, annotation: number, imgType: number = 1) {
-    left ? this.imgMan1.annotateCanvas(annotation, imgType) : this.imgMan2.annotateCanvas(annotation, imgType);
+  annotateCanvas(left: boolean, width: number, height: number, alpha: number, centerx: number, centery: number,
+      imgType: number, normalize: boolean) {
+    left ? this.imgMan1.annotateCanvas(width, height, alpha, centerx, centery, imgType, normalize) :
+        this.imgMan2.annotateCanvas(width, height, alpha, centerx, centery, imgType, normalize);
   }
 
   getOriginalImage(left: boolean) {
@@ -201,5 +203,10 @@ export class ImageTransformerComponent extends BaseTransformerComponent implemen
     const b = res.left.y - res.right.y;
 
     return Math.sqrt(a * a + b * b);
+  }
+
+  setAllLandmarks(left: boolean, faceLocation: any) {
+    left ? this.imgMan1.setAllLandmarksFromFaceLocation(faceLocation) : 
+          this.imgMan2.setAllLandmarksFromFaceLocation(faceLocation);
   }
 }

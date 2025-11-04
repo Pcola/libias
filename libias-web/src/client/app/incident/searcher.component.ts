@@ -83,6 +83,8 @@ export class SearcherComponent implements OnInit {
   nationalities: SelectItem[];
   selectedNationality: string = NATIONALITY_EMPTY;
 
+  isStatusOpen = false;
+
   constructor (
     private route: ActivatedRoute,
     private router: Router,
@@ -218,44 +220,55 @@ export class SearcherComponent implements OnInit {
     this.analyzePortrait(left, img, isCallingFirstTime);
   }
 
-  private eyesAnnotatedFun(left: boolean, obj: any) {
-    // Callback keď sú oči ručne anotované
-    const eyeDistance = this.imageTransformer.computeAndUpdateEyeDistance(left, obj, true);
-    console.debug('Eyes annotated for ' + (left ? 'left' : 'right') + ' image. Distance: ' + eyeDistance);
+  public eyesAnnotatedFun = (left: boolean, obj: any): void => {
+  console.log('eyesAnnotatedFun called with:', { left, obj });
+  console.log('imageTransformer exists:', !!this.imageTransformer);
+  
+  if (!this.imageTransformer) {
+    console.warn('imageTransformer is not initialized yet');
+    return;
   }
+  
+  console.log('computeAndUpdateEyeDistance starting...');
+  const eyeDistance = this.imageTransformer.computeAndUpdateEyeDistance(left, obj, true);
+  console.log('Eyes annotated for ' + (left ? 'left' : 'right') + ' image. Distance: ' + eyeDistance);
+}
 
-  /**
-   * @param left - which image (true = left/search image, false = right/result image)
-   * @param img - image base64
-   * @param isCallingFirstTime - flag if this is first time call
-   *
-   * call cognitec to get best image position
-   */
   private analyzePortrait(left: boolean, img: string, isCallingFirstTime: boolean) {
-    let req = new AnalyzePortraitRequest();
-    req.img = img;
-    this.busy = true;
+  const req = new AnalyzePortraitRequest();
+  req.img = img;
+  this.busy = true;
 
-    this.cognitecService.analyzePortrait(req).subscribe(
-      resp => {
-        this.busy = false;
-        let portrait = resp.val.portraitCharacteristics;
-        if (portrait && portrait.leftEye && portrait.rightEye) {
-          var res = {
-            left: {x: portrait.rightEye.x, y: portrait.rightEye.y, set: 1},
-            right: {x: portrait.leftEye.x, y: portrait.leftEye.y, set: 1}
-          };
+  this.cognitecService.findFaces(req).subscribe(
+    resp => {
+      this.busy = false;
 
-          // this.imageTransformer.annotateCanvas(left, res, 1);
-        }
-       },
-      err => {
-        this.busy = false;
-        this.utils.showGrowl(this.msgs, GROWL_SEVERITY_ERROR, 'label.Error', 'error.CallCognitec');
-        console.error('error verificationPortraits: ' + err);
+      if (!resp.val || !resp.val.faces || !resp.val.faces[0]) {
+        return;
       }
-    );
-  }
+
+      if (resp.val.faces.length > 1) {
+        resp.val.faces.sort((a, b) => b.boundingBox.width - a.boundingBox.width);
+      }
+
+      const face = resp.val.faces[0];
+      
+      if (face.boundingBox) {
+        this.imageTransformer.annotateCanvas(left, face.boundingBox.width, 
+          face.boundingBox.height, face.boundingBox.alpha,
+          face.boundingBox.center.x, face.boundingBox.center.y, 
+          isCallingFirstTime ? 0 : 1, this.isStatusOpen);
+      }
+
+      this.imageTransformer.setAllLandmarks(left, face);
+    },
+    err => {
+      this.busy = false;
+      this.utils.showGrowl(this.msgs, GROWL_SEVERITY_ERROR, 'label.Error', 'error.CallCognitec');
+      console.error('Error getting findFaces: ' + err);
+    }
+  );
+}
 
   /**
    * @param img - image to search
@@ -319,8 +332,6 @@ export class SearcherComponent implements OnInit {
             left: {x: faceLoc.rightEye.value.x, y: faceLoc.rightEye.value.y, set: 1},
             right: {x: faceLoc.leftEye.value.x, y: faceLoc.leftEye.value.y, set: 1}
           };
-
-          // this.imageTransformer.annotateCanvas(true, res, resp.imgType);
         }
 
         // find persons for image oids

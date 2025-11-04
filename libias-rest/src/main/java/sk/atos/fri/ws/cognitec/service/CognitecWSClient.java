@@ -72,6 +72,16 @@ public class CognitecWSClient extends WebServiceGatewaySupport implements ICogni
   }
 
   @Override
+  public FindFacesResponse findFaces(byte[] imageBytes) {
+    Image createImage = OBJECT_FACTORY.createImage();
+    createImage.setBinaryImg(imageBytes);
+
+    FindFaces request = new FindFaces();
+    request.setImage(OBJECT_FACTORY.createFindFacesImage(createImage));
+    return (FindFacesResponse) getWebServiceTemplate().marshalSendAndReceive(request);
+  }
+
+  @Override
   public VerificationPortraitsResponse verificationPortraits(byte[] imageABytes, byte[] imageBBytes, String authName) {
     Image createImageA = OBJECT_FACTORY.createImage();
     createImageA.setBinaryImg(imageABytes);
@@ -103,5 +113,4 @@ public class CognitecWSClient extends WebServiceGatewaySupport implements ICogni
     request.setPriority(Integer.parseInt(serverConfig.getIdentificationBinningPriority()));
     return (IdentBinningResponse) getWebServiceTemplate().marshalSendAndReceive(request);
   }
-
 }
