@@ -14,7 +14,7 @@ import {
   GROWL_LIFE,
   GROWL_SEVERITY_ERROR,
   ROLE_ADMIN,
-  ROLE_SUPEUSER,
+  ROLE_SUPERUSER,
   STATUS_ID_ADJUSTED,
   STATUS_ID_AUTO_ADJUSTED,
   STATUS_ID_DNUMBER_DIFF,
@@ -59,7 +59,7 @@ export class StatisticsComponent implements OnInit {
   }
 
   ngOnInit() {
-    if (!this.loginService.isAuthenticated() || !this.loginService.isAuthorized([ROLE_SUPEUSER, ROLE_ADMIN])) {
+    if (!this.loginService.isAuthenticated() || !this.loginService.isAuthorized([ROLE_SUPERUSER, ROLE_ADMIN])) {
       this.loginService.logout(true);
     } else {
       this.busy = true;

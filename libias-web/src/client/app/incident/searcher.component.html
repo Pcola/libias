@@ -18,101 +18,87 @@
 
     <div class="ui-g" style="margin-top:10px;">
       <div class="ui-g-2">
+
+        <p-panel header="Vorherige Suche" styleClass="prev-search">
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <label for="inputRequestId">Such-ID eingeben:</label>
+              <input type="text" pInputText [(ngModel)]="searchRequestId" id="inputRequestId" placeholder=""
+                style="flex: 1; min-width: 60px;" />
+            </div>
+            <button pButton type="button" label="Laden" icon="fa fa-download" (click)="loadPreviousSearch()"
+              [disabled]="!searchRequestId || busy" style="width: 100%;" class="p-button-sm"></button>
+          </div>
+        </p-panel>
+
         <p-panel header="Parameter">
           <div style="display: flex;">
             <div class="ui-g ui-g-nopad">
               <div class="ui-g-8" style="text-align: left; margin-top: 4px">
-                <label for="inputCandidates">Max. Kandidaten:</label>
+                <label for="inputCandidates">MaxKandidaten:</label>
               </div>
               <div class="ui-g-4">
-                <input type="number" pInputText class="input_params"
-                                     [(ngModel)]="maxCandidates"
-                                     [max]="MAX_CANDIDATES"
-                                     [min]="MIN_CANDIDATES"
-                                     id="inputCandidates"
-                                     required/>
+                <input type="number" pInputText class="input_params" [(ngModel)]="maxCandidates" [max]="MAX_CANDIDATES"
+                  [min]="MIN_CANDIDATES" id="inputCandidates" required />
               </div>
               <div class="ui-g-8" style="text-align: left; margin-top: 4px">
-                <label for="inputScore">Min. Score (%):</label>
+                <label for="inputScore">MinScore:</label>
               </div>
               <div class="ui-g-4">
-                <input type="number" pInputText class="input_params"
-                                     [(ngModel)]="minScore"
-                                     [max]="MAX_SCORE"
-                                     [min]="MIN_SCORE"
-                                     id="inputScore"/>
+                <input type="number" pInputText class="input_params" [(ngModel)]="minScore" [max]="MAX_SCORE"
+                  [min]="MIN_SCORE" id="inputScore" />
               </div>
               <div class="ui-g-8" style="text-align: left; margin-top: 4px">
-                <label for="inputAge">Min. Alter:</label>
+                <label for="inputAge">MinAlter:</label>
               </div>
               <div class="ui-g-4">
-                <input type="number" pInputText class="input_params"
-                                     [(ngModel)]="minAge"
-                                     [max]="MAX_AGE"
-                                     [min]="MIN_AGE"
-                                     id="inputAge"/>
+                <input type="number" pInputText class="input_params" [(ngModel)]="minAge" [max]="MAX_AGE"
+                  [min]="MIN_AGE" id="inputAge" />
               </div>
               <div class="ui-g-8" style="text-align: left; margin-top: 4px">
                 <label for="inputGender">Geschlecht:</label>
               </div>
               <div class="ui-g-4">
-                <p-dropdown inputId="inputGender" [options]="gender"
-                                                  [autoWidth]="false"
-                                                  [style]="{'width':'63px'}"
-                                                  [(ngModel)]="selectedGender">
+                <p-dropdown inputId="inputGender" [options]="gender" [autoWidth]="false" [style]="{'width':'63px'}"
+                  [(ngModel)]="selectedGender">
                 </p-dropdown>
               </div>
               <div class="ui-g-12" style="text-align: left; margin-top: 4px">
                 <label for="inputNation">Staatsangehörigkeit:</label>
               </div>
               <div class="ui-g-12">
-                <p-dropdown inputId="inputNation" [options]="nationalities"
-                                                  [autoWidth]="false"
-                                                  [style]="{'width':'240px'}"
-                                                  [(ngModel)]="selectedNationality">
+                <p-dropdown inputId="inputNation" [options]="nationalities" [autoWidth]="false"
+                  [style]="{'width':'240px'}" [(ngModel)]="selectedNationality">
                 </p-dropdown>
               </div>
             </div>
           </div>
         </p-panel>
 
-        <p-panel (keydown)="updateSelectionOnScroll($event)" header="{{'label.Matches' | translate}}&nbsp;PKZ" tabindex="0">
-          <p-listbox (onChange)="onChangedIncidentMatch($event)" [(ngModel)]="selectedCaseId" [listStyle]="{'max-height':'510px'}"
-                     [options]="relatedCases" [style]="{'width':'100%'}"></p-listbox>
+        <p-panel (keydown)="updateSelectionOnScroll($event)" header="{{'label.Matches' | translate}}&nbsp;PKZ"
+          tabindex="0">
+          <p-listbox (onChange)="onChangedIncidentMatch($event)" [(ngModel)]="selectedCaseId"
+            [listStyle]="{'max-height':'510px'}" [options]="relatedCases" [style]="{'width':'100%'}"></p-listbox>
         </p-panel>
       </div>
 
       <div class="ui-g-10">
-        <app-image-transformer #imageTransformer
-                       [inSearchTab]="true"
-                       [compareDataHolderService]="compareDataHolderService"
-                       [annotateReqFun]="annotateReq"
-                       [eyesAnnotatedFun]="eyesAnnotatedFun">
+        <app-image-transformer #imageTransformer [inSearchTab]="true"
+          [compareDataHolderService]="compareDataHolderService" [annotateReqFun]="annotateReq"
+          [eyesAnnotatedFun]="eyesAnnotatedFun">
+          <div style="display: flex; flex-direction: column; gap: 5px;">
+            <button pButton type="button" label="Herunterladen (PDF)" icon="fa fa-file-pdf-o"
+              (click)="exportSingle(false)" [disabled]="!exportEnabled" style="width: 100%;"></button>
+
+            <button pButton type="button" label="Alle herunterladen (Excel)" icon="fa fa-file-excel-o"
+              (click)="exportBulk()" [disabled]="! exportEnabled" style="width: 100%;"></button>
+
+            <p-checkbox binary="true" label="mit Benutzernamen" [(ngModel)]="exportFullName" [disabled]="!exportEnabled"
+              [ngStyle]="{'display': 'block', 'text-align': 'center', 'margin-top': '10px'}">
+            </p-checkbox>
+          </div>
         </app-image-transformer>
       </div>
-    </div>
-
-    <div *ngIf='exportEnabled'>
-      <button pButton class='jsman'
-              type="button"
-              label="Herunterladen (PDF ohne Trefferwert)"
-              (click)="exportSingle(false)"
-              [ngStyle]="getComponentPos(0)"></button>
-      <button pButton class='jsman'
-              type="button"
-              label="Alle herunterladen (Excel)"
-              (click)="exportBulk()"
-              [ngStyle]="getComponentPos(1)"></button>
-      <button pButton class='jsman'
-              type="button"
-              label="Herunterladen (PDF mit Trefferwert)"
-              (click)="exportSingle(true)"
-              [ngStyle]="getComponentPos(2)"></button>
-      <p-checkbox class='jsman'
-                  binary="true"
-                  label="mit Benutzernamen"
-                  [(ngModel)]="exportFullName"
-                  [ngStyle]="getComponentPos(3)"></p-checkbox>
     </div>
   </div>
 </div>

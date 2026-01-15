@@ -255,6 +255,7 @@ public class PersonResponse {
       return false;
     }
 
+    /*
     azrNumber = null;
     dNumber = null;
     eNumber = null;
@@ -270,6 +271,7 @@ public class PersonResponse {
     workplace = null;
     gender = null;
     nationality = null;
+    */
 
     return true;
   }

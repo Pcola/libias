@@ -3,8 +3,13 @@
   <persistence-unit name="libias-pu" transaction-type="RESOURCE_LOCAL">
     <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
     <class>sk.atos.fri.dao.libias.model.LogType</class>
-    <class>sk.atos.fri.dao.libias.model.Incident</class>
-    <class>sk.atos.fri.dao.libias.model.IncidentHistory</class>
+    <class>sk.atos.fri.dao.libias.model.IncidentCognitecEntity</class>
+    <class>sk.atos.fri.dao.libias.model.IncidentGesEntity</class>
+    <class>sk.atos.fri.dao.libias.model.IncidentHistoryCognitecEntity</class>
+    <class>sk.atos.fri.dao.libias.model.IncidentHistoryGesEntity</class>
+    <class>sk.atos.fri.dao.libias.model.SearchRequestEntity</class>
+    <class>sk.atos.fri.dao.libias.model.SearchRequestCandidateEntity</class>
+    <class>sk.atos.fri.dao.libias.model.TrafficLight</class>
     <class>sk.atos.fri.dao.libias.model.UserRole</class>
     <class>sk.atos.fri.dao.libias.model.UserRole2BamUser</class>
     <class>sk.atos.fri.dao.libias.model.Report</class>

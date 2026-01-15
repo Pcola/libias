@@ -43,5 +43,7 @@ export class IncidentResponse {
   bemLastChangedOn: string;
   ausLastChangedBy: string;
   ausLastChangedOn: string;
+  aAkteLocked: number;
+  bAkteLocked: number;
   incidentHistory: IncidentHistory[];
 }

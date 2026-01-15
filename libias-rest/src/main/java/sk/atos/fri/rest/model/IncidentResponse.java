@@ -2,7 +2,7 @@ package sk.atos.fri.rest.model;
 
 import java.util.List;
 
-import sk.atos.fri.dao.libias.model.Incident;
+import sk.atos.fri.dao.libias.domain.Incident;
 
 public class IncidentResponse {
 	

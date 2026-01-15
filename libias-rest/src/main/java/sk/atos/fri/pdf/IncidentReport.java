@@ -27,7 +27,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import sk.atos.fri.common.Constants;
 import sk.atos.fri.dao.IncidentStatus;
-import sk.atos.fri.dao.libias.model.Incident;
+import sk.atos.fri.dao.libias.domain.Incident;
 import sk.atos.fri.dao.libias.model.Status;
 import sk.atos.fri.dao.libias.service.ImageService;
 import sk.atos.fri.log.Error;
@@ -243,6 +243,7 @@ public class IncidentReport {
     String score = df.format(inc.getScore() * 100.0) + "%";
     table.addCell(createTextCell(new Phrase(score, normal), Rectangle.BOX, Element.ALIGN_CENTER));
 
+    inc.handleAkteLocked();
     addPersonData(table, "PKZ", inc.getaPkz() != null ? inc.getaPkz().toString() : "", inc.getbPkz()!= null? inc.getbPkz().toString() : "");
     addPersonData(table, translate(lang, "label.FileNumber"), inc.getaFileNumber(), inc.getbFileNumber());
     addPersonData(table, translate(lang, "label.ApplicantType"), inc.getaApplicantType(), inc.getbApplicantType());

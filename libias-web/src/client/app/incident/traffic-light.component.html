@@ -1,0 +1,105 @@
+<div class="container normal-text">
+    <div class="inner-container">
+
+        <div class="div_spinner" *ngIf="busy">
+            <sk-circle></sk-circle>
+        </div>
+
+        <p-growl [value]="msgs" [life]="growlLife"></p-growl>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1 class="page-title">{{'label.page.TrafficLight' | translate}}</h1>
+            <button pButton type="button" label="{{'label.AddNew' | translate}}" (click)="addNewRow()" 
+                    icon="fa-plus" class="ui-button-primary"></button>
+        </div>
+
+        <p-dataTable [value]="trafficLights" [style]="{'margin-bottom':'50px'}" [immutable]="false" rowHover="true">
+            
+            <p-column field="roleId" [sortable]="true">
+                <ng-template pTemplate="header">
+                    {{'label.RoleId' | translate}}
+                </ng-template>
+                <ng-template let-col let-rowData="rowData" pTemplate="body">
+                    <span *ngIf="!isEditing(rowData)">{{getRoleName(rowData[col.field])}}</span>
+                    <p-dropdown *ngIf="isEditing(rowData)" [(ngModel)]="rowData[col.field]" 
+                                [options]="roles" optionLabel="name" optionValue="id"></p-dropdown>
+                </ng-template>
+            </p-column>
+
+            <p-column field="scoreFrom" [sortable]="true">
+                <ng-template pTemplate="header">
+                    {{'label.ScoreFrom' | translate}}
+                </ng-template>
+                <ng-template let-col let-rowData="rowData" pTemplate="body">
+                    <span *ngIf="!isEditing(rowData)">{{rowData[col.field]}}</span>
+                    <input *ngIf="isEditing(rowData)" pInputText [(ngModel)]="rowData[col.field]" 
+                           type="number" step="0.1" />
+                </ng-template>
+            </p-column>
+
+            <p-column field="scoreTo" [sortable]="true">
+                <ng-template pTemplate="header">
+                    {{'label.ScoreTo' | translate}}
+                </ng-template>
+                <ng-template let-col let-rowData="rowData" pTemplate="body">
+                    <span *ngIf="!isEditing(rowData)">{{rowData[col.field]}}</span>
+                    <input *ngIf="isEditing(rowData)" pInputText [(ngModel)]="rowData[col.field]" 
+                           type="number" step="0.1" />
+                </ng-template>
+            </p-column>
+
+            <p-column field="commentRed" [sortable]="true">
+                <ng-template pTemplate="header">
+                    {{'label.CommentRed' | translate}}
+                </ng-template>
+                <ng-template let-col let-rowData="rowData" pTemplate="body">
+                    <span *ngIf="!isEditing(rowData)" >{{rowData[col.field]}}</span>
+                    <input *ngIf="isEditing(rowData)" pInputText [(ngModel)]="rowData[col.field]" 
+                           maxlength="100" />
+                </ng-template>
+            </p-column>
+
+            <p-column field="commentYellow" [sortable]="true">
+                <ng-template pTemplate="header">
+                    {{'label.CommentYellow' | translate}}
+                </ng-template>
+                <ng-template let-col let-rowData="rowData" pTemplate="body">
+                    <span *ngIf="!isEditing(rowData)">{{rowData[col.field]}}</span>
+                    <input *ngIf="isEditing(rowData)" pInputText [(ngModel)]="rowData[col.field]" 
+                           maxlength="100" />
+                </ng-template>
+            </p-column>
+
+            <p-column field="commentGreen" [sortable]="true">
+                <ng-template pTemplate="header">
+                    {{'label.CommentGreen' | translate}}
+                </ng-template>
+                <ng-template let-col let-rowData="rowData" pTemplate="body">
+                    <span *ngIf="!isEditing(rowData)">{{rowData[col.field]}}</span>
+                    <input *ngIf="isEditing(rowData)" pInputText [(ngModel)]="rowData[col.field]" 
+                           maxlength="100" />
+                </ng-template>
+            </p-column>
+
+            <p-column>
+                <ng-template pTemplate="header">
+                    {{'label.Actions' | translate}}
+                </ng-template>
+                <ng-template let-rowData="rowData" pTemplate="body">
+                    <ng-container *ngIf="!isEditing(rowData)">
+                        <button pButton type="button" icon="fa-pencil" class="ui-button-info" 
+                                (click)="editRow(rowData)" style="margin-right: 5px;"></button>
+                        <button pButton type="button" icon="fa-trash" class="ui-button-danger" 
+                                (click)="deleteRow(rowData)"></button>
+                    </ng-container>
+                    <ng-container *ngIf="isEditing(rowData)">
+                        <button pButton type="button" icon="fa-check" class="ui-button-success" 
+                                (click)="saveRow(rowData)" style="margin-right: 5px;"></button>
+                        <button pButton type="button" icon="fa-close" class="ui-button-secondary" 
+                                (click)="cancelEdit(rowData)"></button>
+                    </ng-container>
+                </ng-template>
+            </p-column>
+        </p-dataTable>
+    </div>
+</div>

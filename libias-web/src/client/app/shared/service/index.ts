@@ -15,3 +15,6 @@ export * from './statistic.service';
 export * from './notification.service';
 export * from './priority.service';
 export * from './compareDataHolder.service';
+export * from './traffic-light.service';
+export * from './ges.service';
+export * from './search-request.service';

@@ -1,0 +1,2200 @@
+openapi: 3.0.3
+info: {title: ZIMP - IMA, description: Diese Spezifikation beschreibt die von ZIMP
+    bereitgestellte Schnittstelle des Integrationsmoduls Abfrage (IMA)., version: 1.11.1}
+servers:
+- {url: 'https://zimp-prod.app.psp.bka.bund.de/services/ima', description: IMA Produktionsumgebung}
+- {url: 'https://zimp-preprod.app.psp.bka.bund.de/services/ima', description: IMA
+    Präproduktionsumgebung}
+- {url: 'https://zimp-test.app-dev.psp.bka.bund.de/services/ima', description: IMA
+    Testumgebung}
+- {url: 'https://zimp-dev.app-dev.psp.bka.bund.de/services/ima', description: IMA
+    Entwicklungsumgebung}
+paths:
+  /v1.11/metadaten/bestandsabfrage:
+    get:
+      tags: [Metadatenabfrage]
+      summary: Metadaten der Bestandsabfrage aller zur Verfügung stehenden Systeme
+      operationId: metadaten-bestandsabfrage
+      parameters:
+      - name: systemschluessel
+        in: query
+        description: Filtert die Systeme. Z.B. für Adapter, die mehr als ein System
+          bereitstellen.
+        required: false
+        schema: {type: string}
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/Abfragesystembeschreibung'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+  ? /v1.11/metadaten/bestandsabfrage/{systemschluessel}/{dateischluessel}/{bestandsabfrageartschluessel}/suchparameterbeschreibungen
+  : post:
+      tags: [Metadatenabfrage]
+      summary: liefert Suchparameterbeschreibung(en) kontextabhängiger Suchparameter
+        einer Bestandsabfrageart
+      operationId: metadaten-bestandsabfrage-kontextabhaengig
+      requestBody:
+        description: Metadatenabfrage mit Suchparameterschlüsseln und Abfragekontext
+        content:
+          application/json;charset=UTF-8:
+            schema: {$ref: '#/components/schemas/Metadatenabfrage'}
+        required: true
+      parameters:
+      - name: systemschluessel
+        in: path
+        description: Schlüssel des Systems (über alle Systeme eindeutig)
+        required: true
+        schema: {type: string}
+      - name: dateischluessel
+        in: path
+        description: Schlüssel der Datei (über alle Dateien eines Systems eindeutig)
+        required: true
+        schema: {type: string}
+      - name: bestandsabfrageartschluessel
+        in: path
+        description: Schlüssel der Bestandsabfrageart
+        required: true
+        schema: {type: string}
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/Suchparameterbeschreibung'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+  /v1.11/bestandsabfrage:
+    post:
+      tags: [Bestandsabfrage]
+      summary: Bestandsabfrage - Abfrage des Bestandes ein oder mehrerer Dateien ein
+        oder mehrerer Informationssysteme
+      operationId: bestandsabfrage
+      requestBody:
+        description: Bestandsabfrage
+        content:
+          application/json;charset=UTF-8:
+            schema: {$ref: '#/components/schemas/Bestandsabfrage'}
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/Systemsuchergebnis'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+      x-codegen-request-body-name: anfrage
+  /v1.11/trefferdetailabfrage:
+    post:
+      tags: [Trefferdetailabfrage]
+      summary: Trefferdetailabfrage - Detailinformationen zu einem Treffer
+      operationId: trefferdetailabfrage
+      requestBody:
+        description: Trefferdetailabfrage
+        content:
+          application/json;charset=UTF-8:
+            schema: {$ref: '#/components/schemas/Trefferdetailabfrage'}
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema: {$ref: '#/components/schemas/Systemsuchergebnis'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /v1.11/trefferanlageabfrage:
+    post:
+      tags: [Trefferanlageabfrage]
+      summary: Trefferanlageabfrage - Anlagen (Bilder, PDF-Dokumente u.ä.) zu einem
+        Treffer
+      operationId: trefferanlageabfrage
+      requestBody:
+        description: Trefferanlageabfrage
+        content:
+          application/json;charset=UTF-8:
+            schema: {$ref: '#/components/schemas/Trefferanlageabfrage'}
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema: {type: string, format: binary}
+        '500': {$ref: '#/components/responses/InternalServerError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /v1.11/version:
+    get:
+      tags: [Version]
+      summary: Versionsnummer des Adapters oder des Integrationsmoduls
+      operationId: version
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/Version'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+  /v1.11/formular/abrufen:
+    post:
+      tags: [Formular]
+      summary: Das Formular mit dem angegebenen Schlüssel wird abgerufen.
+      operationId: formular-abrufen
+      requestBody:
+        description: FormularAbrufenAnfrage
+        content:
+          application/json;charset=UTF-8:
+            schema: {$ref: '#/components/schemas/FormularAbrufenAnfrage'}
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema: {$ref: '#/components/schemas/FormularUndFehler'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /v1.11/formular/speichern:
+    post:
+      tags: [Formular]
+      summary: Das Formular mit dem angegebenen Schlüssel wird gespeichert.
+      operationId: formular-speichern
+      requestBody:
+        description: FormularSpeichernAnfrage
+        content:
+          application/json;charset=UTF-8:
+            schema: {$ref: '#/components/schemas/FormularSpeichernAnfrage'}
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema: {$ref: '#/components/schemas/SystemsuchergebnisUndFehler'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+#  /v1.11/formular/anlage/speichern:
+#    post:
+#      tags: [Formular]
+#      summary: Speichern einer neuen Anlage zu einem Formular.
+#      operationId: formularanlage-speichern
+#      requestBody:
+#        description: FormularanlageSpeichernAnfrage
+#        content:
+#          multipart/form-data:
+#            schema:
+#              type: object
+#              properties:
+#                daten: {type: string, format: binary}
+#                formularanlageSpeichernAnfrage: {$ref: '#/components/schemas/FormularanlageSpeichernAnfrage'}
+#              required: [daten, formularanlageSpeichernAnfrage]
+#            encoding:
+#              formularanlageSpeichernAnfrage: {contentType: application/json;charset=UTF-8}
+#        required: true
+#      responses:
+#        200:
+#          description: OK
+#          content:
+#            application/json;charset=UTF-8:
+#              schema: {$ref: '#/components/schemas/FormularelementgruppeFachobjektUndFehler'}
+#        '401': {$ref: '#/components/responses/Unauthorized'}
+#        '403': {$ref: '#/components/responses/Forbidden'}
+#  ? /v1.11/trefferanlageabfrage/{systemschluessel}/{dateischluessel}/{trefferschluessel}/{herkunftschluessel}/{anlageschluessel}
+#  : get:
+#      tags: [Trefferanlageabfrage]
+#      summary: Trefferanlageabfrage - Anlagen (Bilder, PDF-Dokumente u.ä.) zu einem
+#        Treffer
+#      operationId: getTrefferanlageabfrage
+#      parameters:
+#      - name: systemschluessel
+#        in: path
+#        description: Schlüssel des Systems (über alle Systeme eindeutig)
+#        required: true
+#        schema: {type: string}
+#      - name: dateischluessel
+#        in: path
+#        description: Schlüssel der Datei (über alle Dateien eines Systems eindeutig)
+#        required: true
+#        schema: {type: string}
+#      - name: trefferschluessel
+#        in: path
+#        description: Base64Url-kodierter Schlüssel des Treffers (innerhalb einer Datei
+#          eindeutig)
+#        required: true
+#        schema: {type: string, format: byte}
+#      - name: herkunftschluessel
+#        in: path
+#        description: Schlüssel eines Containers, Formulars etc., in dem sich die Anlage
+#          befindet
+#        required: true
+#        schema: {type: string}
+#      - name: anlageschluessel
+#        in: path
+#        description: Base64Url-kodierter Schlüssel der Anlage (innerhalb eines Treffers
+#          eindeutig)
+#        required: true
+#        schema: {type: string, format: byte}
+#      responses:
+#        '200':
+#          description: OK
+#          content:
+#            '*/*':
+#              schema: {type: string, format: binary}
+#        '401': {$ref: '#/components/responses/Unauthorized'}
+#        '403': {$ref: '#/components/responses/Forbidden'}
+#        '500': {$ref: '#/components/responses/InternalServerError'}
+  /v1.11/trefferdetailabfrage/dokument:
+    post:
+      tags: [Trefferdetailabfrage]
+      summary: erzeugt (in Dokument verpacktes) PDF für einen Treffer
+      operationId: pdfAusTrefferdetailsAlsDokument
+      requestBody:
+        description: Daten für das zu generierende PDF - Suchergebnis mit Trefferdetails
+        content:
+          application/json;charset=UTF-8:
+            schema: {$ref: '#/components/schemas/TrefferPdfInput'}
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema: {$ref: '#/components/schemas/Dokument'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '500': {$ref: '#/components/responses/InternalServerError'}
+  /v1.11/trefferdetailabfrage/pdf:
+    post:
+      tags: [Trefferdetailabfrage]
+      summary: erzeugt PDF für einen Treffer
+      operationId: pdfAusTrefferdetails
+      requestBody:
+        description: Daten für das zu generierende PDF - Suchergebnis mit Trefferdetails
+        content:
+          application/json;charset=UTF-8:
+            schema: {$ref: '#/components/schemas/TrefferPdfInput'}
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema: {type: string, format: binary}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '500': {$ref: '#/components/responses/InternalServerError'}
+  /v1.11/bestandsabfrage/dokument:
+    post:
+      tags: [Bestandsabfrage]
+      summary: erzeugt (in Dokument verpacktes) PDF für ein oder mehrere Trefferlisten
+      operationId: pdfAusTrefferlistenAlsDokument
+      requestBody:
+        description: Daten für das zu generierende PDF - Suchparameter und Suchergebnisse
+        content:
+          application/json;charset=UTF-8:
+            schema: {$ref: '#/components/schemas/TrefferlistenPdfInput'}
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema: {$ref: '#/components/schemas/Dokument'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '500': {$ref: '#/components/responses/InternalServerError'}
+  /v1.11/bestandsabfrage/pdf:
+    post:
+      tags: [Bestandsabfrage]
+      summary: erzeugt PDF für ein oder mehrere Trefferlisten
+      operationId: pdfAusTrefferlisten
+      requestBody:
+        description: Daten für das zu generierende PDF - Suchparameter und Suchergebnisse
+        content:
+          application/json;charset=UTF-8:
+            schema: {$ref: '#/components/schemas/TrefferlistenPdfInput'}
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema: {type: string, format: binary}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '500': {$ref: '#/components/responses/InternalServerError'}
+  /v1.11/bestandsabfrage/historie/{page}/{size}:
+    get:
+      tags: [Bestandsabfrage]
+      summary: liefert eine Seite der Bestandsabfragehistorie (eines Nutzers)
+      operationId: bestandsabfragehistorie
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema: {$ref: '#/components/schemas/Bestandsabfragehistorienseite'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+    parameters:
+    - name: page
+      in: path
+      description: Seite (Pagination)
+      required: true
+      schema: {type: integer, minimum: 0}
+    - name: size
+      in: path
+      description: Anzahl der Sammelabfragen pro Seite (Pagination)
+      required: true
+      schema: {type: integer}
+    - name: systemschluessel
+      in: query
+      description: Schlüssel des Informationssystems (Filter)
+      required: false
+      schema: {type: string}
+    - name: status
+      in: query
+      description: Status der Sammelabfragen (Filter)
+      required: false
+      schema:
+        type: string
+        enum: [abgeschlossen, inBearbeitung]
+    - name: ergebnisId
+      in: query
+      description: Base64Url-kodierte Ergebnis-IDs bei asynchronen Bestandsabfragen
+        (Filter)
+      required: false
+      schema:
+        type: array
+        items: {type: string, format: byte}
+  /v1.11/bestandsabfrage/abfragegrund:
+    post:
+      tags: [Bestandsabfrage]
+      summary: Speicherung des Abfragegrunds nach Anzeige eines Sperrbildschirms
+      operationId: abfragegrund
+      requestBody:
+        description: Daten zur Speicherung des Abfragegrunds
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              title: SperrbildschirmAntwort
+              type: object
+              properties:
+                abfragegrundId: {type: string}
+                abfragegrund: {type: string}
+                abgebrochen: {type: boolean}
+              required: [abfragegrundId, abgebrochen]
+        required: true
+      responses:
+        '200': {description: OK}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+      x-codegen-request-body-name: sperrbildschirmAntwort
+  /v1.11/bestandsabfrage/imp2suchparameter:
+    post:
+      tags: [Bestandsabfrage]
+      summary: liefert Suchparameter ausgehend von einem IMP Fachobjekt
+      operationId: fachobjektToSuchparameter
+      requestBody:
+        description: IMP Fachobjekt
+        content:
+          application/json;charset=UTF-8:
+            schema: {$ref: '#/components/schemas/FachobjektUndSuchparameterschluessel'}
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/Suchparameter'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+      x-codegen-request-body-name: fachobjekt
+  /v1.11/metadaten/bestandsabfragearten:
+    get:
+      tags: [Metadatenabfrage]
+      summary: Alle für den Nutzer verfügbaren Bestandsabfragearten der Metadatenabfrage
+      operationId: metadaten-bestandsabfragearten
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/Bestandsabfrageart'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+  /v1.11/metadaten/bestandsabfrage/{bestandsabfrageart}:
+    get:
+      tags: [Metadatenabfrage]
+      summary: Metadaten der Bestandsabfrage aller dem Nutzer zur Verfügung stehenden
+        Systeme mit der angegebenen Bestandsabfrageart
+      operationId: metadaten-bestandsabfrage-nach-bestandsabfrageart
+      parameters:
+      - name: bestandsabfrageart
+        in: path
+        description: Bestandsabfrageart der gesuchten Bestandsabfragebeschreibungen
+        required: true
+        schema: {type: string}
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/Abfragesystembeschreibung'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+  /v1.11/status/adapter:
+    get:
+      tags: [Status]
+      summary: liefert die Status aller an das IMA angeschlossenen Adapter
+      operationId: adapterstatus
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/Adapterstatus'}
+components:
+  schemas:
+    Abfrage:
+      type: object
+      discriminator: {propertyName: abfragetyp}
+      properties:
+        abfragetyp: {type: string}
+        abfragekontext: {$ref: '#/components/schemas/Kontext'}
+        abfrageparameter:
+          type: array
+          items: {$ref: '#/components/schemas/Parameter'}
+      required: [abfragetyp, abfragekontext]
+    Bestandsabfrage:
+      allOf:
+      - {$ref: '#/components/schemas/Abfrage'}
+      - type: object
+        properties:
+          bestandsabfrageart: {type: string, description: identisch mit Attribut "schluessel"
+              des Schema-Elementes "Bestandsabfrageart"}
+          systeme:
+            type: array
+            items: {$ref: '#/components/schemas/Anfragesystem'}
+            minItems: 1
+        required: [bestandsabfrageart, systeme]
+    Trefferabfrage:
+      allOf:
+      - {$ref: '#/components/schemas/Abfrage'}
+      - type: object
+        properties:
+          systemschluessel: {description: Schlüssel des Systems (über alle Systeme
+              eindeutig), type: string}
+          dateischluessel: {description: Schlüssel der Datei (über alle Dateien eines
+              Systems eindeutig), type: string}
+          trefferschluessel: {description: Schlüssel des Treffers (innerhalb einer
+              Datei eindeutig), type: string}
+        required: [systemschluessel, dateischluessel, trefferschluessel]
+    Trefferdetailabfrage:
+      allOf:
+      - {$ref: '#/components/schemas/Trefferabfrage'}
+    Trefferanlageabfrage:
+      allOf:
+      - {$ref: '#/components/schemas/Trefferabfrage'}
+      - type: object
+        properties:
+          herkunftschluessel: {description: 'Schlüssel eines Containers, Formulars
+              etc., in dem sich die Anlage befindet', type: string}
+          anlageschluessel: {description: Schlüssel der Anlage (innerhalb eines Treffers
+              eindeutig), type: string}
+        required: [herkunftschluessel, anlageschluessel]
+    Anfragedatei:
+      type: object
+      properties:
+        dateischluessel: {type: string}
+        suchparameter:
+          type: array
+          items: {$ref: '#/components/schemas/Suchparameter'}
+          minItems: 1
+      required: [dateischluessel, suchparameter]
+    Anfragesystem:
+      type: object
+      properties:
+        systemschluessel: {type: string}
+        dateien:
+          type: array
+          items: {$ref: '#/components/schemas/Anfragedatei'}
+          minItems: 1
+      required: [systemschluessel, dateien]
+    Dateisuchergebnis:
+      type: object
+      discriminator: {propertyName: dateisuchergebnistyp}
+      properties:
+        dateisuchergebnistyp: {type: string}
+        dateischluessel: {type: string}
+        dateiname: {type: string}
+        antwortzeitpunkt: {type: string, format: date-time, description: wird vom
+            IMA befüllt}
+        hinweise:
+          type: array
+          items: {$ref: '#/components/schemas/Hinweis'}
+        fehler:
+          type: array
+          items: {$ref: '#/components/schemas/Fehler'}
+        impFachdaten: {$ref: '#/components/schemas/ImpFachdaten'}
+        rohdaten: {$ref: '#/components/schemas/Rohdaten'}
+      required: [dateisuchergebnistyp, dateischluessel, dateiname]
+    DateisuchergebnisMitTrefferlisten:
+      allOf:
+      - {$ref: '#/components/schemas/Dateisuchergebnis'}
+      - type: object
+        properties:
+          synopsis: {type: string}
+          trefferlisten:
+            type: array
+            items: {$ref: '#/components/schemas/Trefferliste'}
+      properties:
+        sperrbildschirm: {$ref: '#/components/schemas/Sperrbildschirm'}
+    UnvollstaendigesDateisuchergebnisMitTrefferlisten:
+      allOf:
+      - {$ref: '#/components/schemas/DateisuchergebnisMitTrefferlisten'}
+      - type: object
+        properties:
+          ergebnisId: {type: string}
+        required: [ergebnisId]
+    DateisuchergebnisMitTrefferdetails:
+      allOf:
+      - {$ref: '#/components/schemas/Dateisuchergebnis'}
+      - type: object
+        properties:
+          trefferschluessel: {type: string}
+          treffername: {type: string}
+          trefferart: {type: string, description: 'Bezeichnung des Trefferaufbaus
+              (innerhalb einer Datei eindeutig); korrespondiert häufig mit einem IMP-Fachobjekt,
+              z.B. PERSONALIE, KRAFTFAHRZEUG; wird im Konfigurationsservice benötigt'}
+          trefferdetails:
+            type: array
+            items: {$ref: '#/components/schemas/TrefferdetailOderQuerverweis'}
+        required: [trefferschluessel, treffername, trefferart]
+    Parameter:
+      type: object
+      properties:
+        parameterschluessel: {type: string}
+        wert: {type: string}
+      required: [parameterschluessel, wert]
+    Systemsuchergebnis:
+      type: object
+      properties:
+        systemschluessel: {type: string}
+        systemname: {type: string}
+        dateisuchergebnisse:
+          type: array
+          items: {$ref: '#/components/schemas/Dateisuchergebnis'}
+          minItems: 1
+      required: [systemschluessel, systemname, dateisuchergebnisse]
+    Treffer:
+      type: object
+      properties:
+        trefferschluessel: {type: string}
+        trefferattribute:
+          type: array
+          items: {$ref: '#/components/schemas/Trefferattribut'}
+          minItems: 1
+        markierung: {$ref: '#/components/schemas/Markierung'}
+      required: [trefferschluessel, trefferattribute]
+    Trefferattribut:
+      type: object
+      properties:
+        trefferattributschluessel: {type: string}
+        trefferattributwert: {type: string}
+        fachobjektreferenzen:
+          type: array
+          items: {$ref: '#/components/schemas/Fachobjektreferenz'}
+        quellreferenz: {$ref: '#/components/schemas/Quellreferenz'}
+      required: [trefferattributschluessel]
+    Trefferattributbeschreibung:
+      type: object
+      properties:
+        trefferattributschluessel: {type: string}
+        trefferattributname: {type: string}
+        datentyp:
+          type: string
+          enum: [text, bild]
+        bedeutsamkeit: {$ref: '#/components/schemas/Bedeutsamkeit'}
+      required: [trefferattributschluessel, trefferattributname, datentyp]
+    Trefferliste:
+      type: object
+      properties:
+        trefferlistenart: {type: string, description: 'Bezeichnung des Trefferlistenaufbaus
+            (innerhalb einer Datei eindeutig); korrespondiert häufig mit einem IMP-Fachobjekt,
+            z.B. PERSONALIE, KRAFTFAHRZEUG; wird im Konfigurationsservice benötigt'}
+        trefferlistenname: {type: string}
+        trefferattributbeschreibungen:
+          type: array
+          items: {$ref: '#/components/schemas/Trefferattributbeschreibung'}
+        treffer:
+          type: array
+          items: {$ref: '#/components/schemas/Treffer'}
+      required: [trefferlistenart, trefferlistenname]
+    TrefferdetailOderQuerverweis:
+      type: object
+      description: abstraktes Objekt
+      discriminator: {propertyName: trefferdetailtyp}
+      properties:
+        trefferdetailtyp: {type: string}
+        label: {type: string}
+      required: [trefferdetailtyp]
+    Querverweis:
+      allOf:
+      - {$ref: '#/components/schemas/TrefferdetailOderQuerverweis'}
+      - type: object
+        properties:
+          pfad: {type: string, description: JSONPath des referenzierten Trefferdetails}
+        required: [pfad]
+    TrefferdetailOderGruppe:
+      description: abstraktes Objekt
+      allOf:
+      - {$ref: '#/components/schemas/TrefferdetailOderQuerverweis'}
+      - type: object
+        properties:
+          aktionen:
+            type: array
+            items: {$ref: '#/components/schemas/Trefferaktion'}
+          beschreibung: {type: string}
+          bedeutsamkeit: {$ref: '#/components/schemas/Bedeutsamkeit'}
+    Trefferdetail:
+      description: abstraktes Objekt
+      allOf:
+      - {$ref: '#/components/schemas/TrefferdetailOderGruppe'}
+      - type: object
+        properties:
+          darstellungshinweise:
+            type: array
+            items: {$ref: '#/components/schemas/Darstellungshinweis'}
+    Trefferaktion:
+      type: object
+      properties:
+        trefferaktionsschluessel: {type: string, description: 'Für die Trefferaktionen
+            der Art "HINZUFUEGEN", "LOESCHEN" und "EDITIEREN", ist im Trefferaktionsschlüssel
+            der Formularschlüssel zu übertragen.'}
+        art: {type: string, description: 'HINZUFUEGEN, LOESCHEN oder EDITIEREN. Was
+            hinzugefügt, gelöscht oder editiert werden soll, ergibt sich aus der Zuordnung
+            der Trefferaktion zu einem Trefferdetail oder einer Trefferdetailgruppe.
+            Wird ein Trefferdetail oder eine Trefferdetailgruppe neu angelegt, wird
+            die Trefferaktion dem übergeordneten Objekt zugeordnet (DateisuchergebnisMitTrefferdetails
+            oder Trefferdetailgruppe).'}
+      required: [trefferaktionsschluessel, art]
+    Bedeutsamkeit:
+      type: string
+      enum: [hoch, mittel, niedrig]
+      default: mittel
+    Text:
+      allOf:
+      - {$ref: '#/components/schemas/Trefferdetail'}
+      - type: object
+        properties:
+          wert: {type: string}
+          datentyp:
+            type: string
+            enum: [text, html]
+            default: text
+          fachobjektreferenzen:
+            type: array
+            items: {$ref: '#/components/schemas/Fachobjektreferenz'}
+          quellreferenz: {$ref: '#/components/schemas/Quellreferenz'}
+        required: [label]
+    Link:
+      description: Verweis auf einen Datei-Anhang der Trefferdetails, i.d.R. als HTML-Link
+        darzustellen
+      allOf:
+      - {$ref: '#/components/schemas/Trefferdetail'}
+      - type: object
+        properties:
+          wert: {type: string, description: angezeigter Text des Links}
+          url: {type: string, description: 'URL einer Datei-Ressource. Relative URL
+              in Bezug auf den Trefferschlüssel, s.a. Trefferanlageabfrage!'}
+          fachobjektreferenzen:
+            type: array
+            items: {$ref: '#/components/schemas/Fachobjektreferenz'}
+          quellreferenz: {$ref: '#/components/schemas/Quellreferenz'}
+    Bild:
+      description: Bild-Anhang der Trefferdetails, i.d.R. darzustellen als eingebettetes
+        HTML-Image
+      allOf:
+      - {$ref: '#/components/schemas/Trefferdetail'}
+      - type: object
+        properties:
+          url: {type: string, description: 'URL des Bildes. Relative URL in Bezug
+              auf den Trefferschlüssel, s.a. Trefferanlageabfrage!'}
+          fachobjektreferenzen:
+            type: array
+            items: {$ref: '#/components/schemas/Fachobjektreferenz'}
+          quellreferenz: {$ref: '#/components/schemas/Quellreferenz'}
+    Trefferlink:
+      description: Verweis auf anderen/weiteren Treffer, auch datei-, system- und
+        adapterübergreifend
+      allOf:
+      - {$ref: '#/components/schemas/Trefferdetail'}
+      - type: object
+        properties:
+          wert: {type: string, description: angezeigter Text des Links}
+          systemschluessel: {type: string}
+          dateischluessel: {type: string}
+          trefferschluessel: {type: string}
+    Trefferdetailgruppe:
+      allOf:
+      - {$ref: '#/components/schemas/TrefferdetailOderGruppe'}
+      - type: object
+        properties:
+          trefferdetails:
+            type: array
+            items: {$ref: '#/components/schemas/TrefferdetailOderQuerverweis'}
+          darstellungshinweise:
+            type: array
+            items: {$ref: '#/components/schemas/DarstellungshinweisGruppe'}
+    Quellreferenz:
+      type: object
+      description: Referenz auf ein Attribut einer Datenstruktur des Informationssystems
+      properties:
+        pfad: {type: string, description: Pfad des Attributes (z.B. XPath oder JSONPath)
+            innerhalb der Datenstruktur des Informationssystems}
+        katalogCode: {type: string, description: 'Katalog-Code des Attributes, wenn
+            es sich um ein katalogbasiertes Attribut handelt'}
+      required: [pfad]
+    Rohdaten:
+      type: object
+      properties:
+        daten:
+          type: array
+          items: {type: string}
+        version: {type: string, description: Schnittstellenversion des Informationssystems}
+    SystemsuchergebnisUndFehler:
+      type: object
+      properties:
+        systemsuchergebnis: {$ref: '#/components/schemas/Systemsuchergebnis'}
+        fehler:
+          type: array
+          items: {$ref: '#/components/schemas/Fehler'}
+    FormularSpeichernAnfrage:
+      allOf:
+      - {$ref: '#/components/schemas/Trefferabfrage'}
+      - type: object
+        properties:
+          formular: {$ref: '#/components/schemas/Formular'}
+        required: [formular]
+    FormularAbrufenAnfrage:
+      allOf:
+      - {$ref: '#/components/schemas/Trefferabfrage'}
+      - type: object
+        properties:
+          formularschluessel: {type: string}
+        required: [formularschluessel]
+#    FormularanlageSpeichernAnfrage:
+#      allOf:
+#      - {$ref: '#/components/schemas/FormularAbrufenAnfrage'}
+#      - type: object
+#        properties:
+#          anlagegruppenschluessel: {type: string, description: Schlüssel der Anlagegruppe
+#              (innerhalb eines Formulars eindeutig)}
+#          impFachdatenIndex: {type: integer, minimum: 0, description: Index des Dokuments
+#              in ImpFachdaten}
+#        required: [anlagegruppenschluessel, impFachdatenIndex]
+    Bestandsabfragehistorienseite:
+      type: object
+      properties:
+        pageInfo: {$ref: '#/components/schemas/PageInfo'}
+        bestandsabfragehistorieneintraege:
+          type: array
+          items: {$ref: '#/components/schemas/Bestandsabfragehistorieneintrag'}
+    Bestandsabfragehistorieneintrag:
+      type: object
+      properties:
+        ergebnisId: {type: string}
+        ausgefuehrt: {type: string, format: date-time}
+        letzteAktualisierung: {type: string, format: date-time}
+        status: {$ref: '#/components/schemas/Bestandsabfragestatus', description: 'aggregierter
+            Status ("abgeschlossen", wenn alle Dateisuchergebnisresuemees "abgeschlossen",
+            sonst "inBearbeitung")'}
+        ergebnis:
+          type: array
+          items: {$ref: '#/components/schemas/Dateisuchergebnisresuemee'}
+        anfrage: {$ref: '#/components/schemas/Bestandsabfrage'}
+      required: [ergebnisId, status, anfrage]
+    Dateisuchergebnisresuemee:
+      type: object
+      properties:
+        systemschluessel: {type: string}
+        dateischluessel: {type: string}
+        synopsis: {type: string}
+        treffer: {type: integer}
+        hinweise: {type: integer}
+        fehler: {type: integer}
+        status: {$ref: '#/components/schemas/Bestandsabfragestatus'}
+      required: [systemschluessel, dateischluessel, treffer, hinweise, fehler, status]
+    Bestandsabfragestatus:
+      type: string
+      enum: [abgeschlossen, inBearbeitung]
+    Sperrbildschirm:
+      type: object
+      properties:
+        abfragegrundId: {type: string}
+        erlaubteZeit: {type: integer, format: int64, description: 'Zeit in ms die
+            ein Nutzer hat, um einen Abfragegrund anzugeben'}
+        sperrbildschirmText: {$ref: '#/components/schemas/SperrbildschirmText'}
+      required: [abfragegrundId, erlaubteZeit, sperrbildschirmText]
+    SperrbildschirmText:
+      type: object
+      properties:
+        titel: {type: string}
+        untertitel: {type: string}
+        textVorEingabe: {type: string}
+        textNachEingabe: {type: string}
+      required: [titel]
+    TrefferlistenPdfInput:
+      allOf:
+      - {$ref: '#/components/schemas/PdfInput'}
+      - type: object
+        properties:
+          bestandsabfragen:
+            type: array
+            items: {$ref: '#/components/schemas/Bestandsabfrage'}
+            minItems: 1
+          systemsuchergebnisse:
+            type: array
+            items: {$ref: '#/components/schemas/Systemsuchergebnis'}
+            minItems: 1
+        required: [bestandsabfragen, systemsuchergebnisse]
+    TrefferPdfInput:
+      allOf:
+      - {$ref: '#/components/schemas/PdfInput'}
+      - type: object
+        properties:
+          abfragekontext: {$ref: '#/components/schemas/Kontext'}
+          systemsuchergebnis: {$ref: '#/components/schemas/Systemsuchergebnis'}
+        required: [abfragekontext, systemsuchergebnis]
+    Dateibeschreibung:
+      properties:
+        zimplexUrl: {type: string}
+        dateischluessel: {type: string}
+        dateiname: {type: string}
+        beschreibung: {type: string}
+        bestandsabfragebeschreibungen:
+          type: array
+          items: {$ref: '#/components/schemas/Bestandsabfragebeschreibung'}
+          minItems: 1
+      required: [zimplexUrl, dateischluessel, dateiname, bestandsabfragebeschreibungen]
+      type: object
+    Adapterstatus:
+      type: object
+      properties:
+        name: {type: string, description: 'z.B. AZR, EES, INPOL-Z'}
+        versionen:
+          type: array
+          items: {$ref: '#/components/schemas/Version'}
+        api: {$ref: '#/components/schemas/Api'}
+        systemeUndDateien:
+          type: object
+          description: Map von Systemen und Dateien, die der Adapter anbietet. Es
+            handelt sich dabei um die System- und Dateinamen, nicht um System-/Dateischlüssel.
+          additionalProperties:
+            description: ermöglicht Map mit beliebigen Schlüsseln (= Systemnamen)
+            type: array
+            items: {type: string}
+    Api:
+      type: object
+      properties:
+        name: {type: string, description: 'z.B. IMA-API, IMS-API, IMF-API'}
+        version: {type: string, description: z.B. v1.10}
+    FachobjektUndSuchparameterschluessel:
+      type: object
+      properties:
+        fachobjekt: {description: 'Fachobjekt, dessen Inhalt auf die mitgelieferten
+            Suchparameterschlüssel gemappt werden soll', $ref: '#/components/schemas/Fachobjekt'}
+        suchparameterschluessel:
+          description: Suchparameterschlüssel, auf die das mitgelieferte Fachobjekt
+            gemappt werden soll
+          type: array
+          items: {type: string}
+    SuchparameterbeschreibungOderPlatzhalter:
+      type: object
+      discriminator: {propertyName: suchparametertyp}
+      properties:
+        suchparametertyp: {type: string}
+        suchparameterschluessel: {type: string}
+      required: [suchparametertyp, suchparameterschluessel]
+    Suchparameterbeschreibung:
+      allOf:
+      - {$ref: '#/components/schemas/SuchparameterbeschreibungOderPlatzhalter'}
+      - type: object
+        properties:
+          name: {type: string}
+          obligatorisch: {type: boolean}
+          beschreibung: {type: string}
+          darstellungshinweise:
+            type: array
+            items: {$ref: '#/components/schemas/Darstellungshinweis'}
+          suchparameteroptionsbeschreibungen:
+            type: array
+            items: {$ref: '#/components/schemas/Suchparameteroptionsbeschreibung'}
+        required: [name, obligatorisch]
+    PlatzhalterFuerKontextabhaengigenSuchparameter:
+      allOf:
+      - {$ref: '#/components/schemas/SuchparameterbeschreibungOderPlatzhalter'}
+    MultipleChoiceSuchparameterbeschreibung:
+      allOf:
+      - {$ref: '#/components/schemas/Suchparameterbeschreibung'}
+      - type: object
+        properties:
+          suchwertbeschreibungen:
+            type: array
+            items: {$ref: '#/components/schemas/Option'}
+          voreinstellung:
+            description: Schlüssel der Optionen (= Suchwerte)
+            type: array
+            items: {type: string}
+    SingleChoiceSuchparameterbeschreibung:
+      allOf:
+      - {$ref: '#/components/schemas/Suchparameterbeschreibung'}
+      - type: object
+        properties:
+          suchwertbeschreibungen:
+            type: array
+            items: {$ref: '#/components/schemas/Option'}
+          voreinstellung: {description: Schlüssel der Option (= Suchwert), type: string}
+    StringSuchparameterbeschreibung:
+      allOf:
+      - {$ref: '#/components/schemas/Suchparameterbeschreibung'}
+      - type: object
+        properties:
+          validierungsregel: {$ref: '#/components/schemas/Validierungsregel'}
+          platzhalter: {type: string}
+          voreinstellung: {type: string}
+          mehrzeilig: {type: boolean, default: false}
+    FileSuchparameterbeschreibung:
+      allOf:
+      - {$ref: '#/components/schemas/Suchparameterbeschreibung'}
+      - type: object
+        properties:
+          platzhalter: {type: string}
+          erlaubteDateitypen: {type: string}
+    BooleanSuchparameterbeschreibung:
+      allOf:
+      - {$ref: '#/components/schemas/Suchparameterbeschreibung'}
+      - type: object
+        properties:
+          voreinstellung: {type: boolean}
+    Suchparameteroptionsbeschreibung:
+      type: object
+      discriminator: {propertyName: suchparameteroptionstyp}
+      properties:
+        suchparameteroptionstyp: {type: string}
+        suchparameteroptionsschluessel: {type: string}
+        name: {type: string}
+        beschreibung: {type: string}
+      required: [suchparameteroptionstyp, suchparameteroptionsschluessel, name]
+    SingleChoiceSuchparameteroptionsbeschreibung:
+      allOf:
+      - {$ref: '#/components/schemas/Suchparameteroptionsbeschreibung'}
+      - type: object
+        properties:
+          suchwertbeschreibungen:
+            type: array
+            items: {$ref: '#/components/schemas/Option'}
+          voreinstellung: {description: Schlüssel der Option (= Suchwert), type: string}
+    MultipleChoiceSuchparameteroptionsbeschreibung:
+      allOf:
+      - {$ref: '#/components/schemas/Suchparameteroptionsbeschreibung'}
+      - type: object
+        properties:
+          suchwertbeschreibungen:
+            type: array
+            items: {$ref: '#/components/schemas/Option'}
+          voreinstellung:
+            description: Schlüssel der Optionen (= Suchwerte)
+            type: array
+            items: {type: string}
+    BooleanSuchparameteroptionsbeschreibung:
+      allOf:
+      - {$ref: '#/components/schemas/Suchparameteroptionsbeschreibung'}
+      - type: object
+        properties:
+          voreinstellung: {type: boolean}
+    Abfragesystembeschreibung:
+      allOf:
+      - {$ref: '#/components/schemas/Systembeschreibung'}
+      - type: object
+        properties:
+          dateibeschreibungen:
+            type: array
+            items: {$ref: '#/components/schemas/Dateibeschreibung'}
+            minItems: 1
+        required: [dateibeschreibungen]
+    Bestandsabfragebeschreibung:
+      type: object
+      properties:
+        bestandsabfrageart: {$ref: '#/components/schemas/Bestandsabfrageart'}
+        suchparametergruppenbeschreibungen:
+          type: array
+          items: {$ref: '#/components/schemas/Suchparametergruppenbeschreibung'}
+          minItems: 1
+        abhaengigkeiten:
+          type: array
+          items: {$ref: '#/components/schemas/Abhaengigkeit'}
+        suchparametergruppenregeln:
+          type: array
+          items: {$ref: '#/components/schemas/Regel'}
+        hinweise:
+          type: array
+          items: {$ref: '#/components/schemas/Hinweis'}
+      required: [bestandsabfrageart, suchparametergruppenbeschreibungen]
+    Bestandsabfrageart:
+      type: object
+      properties:
+        schluessel: {type: string}
+        name: {type: string}
+      required: [schluessel, name]
+    Suchparametergruppenbeschreibung:
+      type: object
+      properties:
+        name: {type: string}
+        beschreibung: {type: string}
+        suchparameterbeschreibungen:
+          type: array
+          items: {$ref: '#/components/schemas/SuchparameterbeschreibungOderPlatzhalter'}
+    Metadatenabfrage:
+      type: object
+      properties:
+        suchparameterschluessel:
+          type: array
+          items: {type: string}
+          minItems: 1
+        abfragekontext: {$ref: '#/components/schemas/Kontext'}
+      required: [suchparameterschluessel, abfragekontext]
+    Suchparameter:
+      type: object
+      properties:
+        suchparameterschluessel: {type: string}
+        suchwerte:
+          type: array
+          items: {type: string}
+          minItems: 1
+        suchparameteroptionen:
+          type: array
+          items: {$ref: '#/components/schemas/Suchparameteroption'}
+      required: [suchparameterschluessel, suchwerte]
+    Suchparameteroption:
+      type: object
+      properties:
+        suchparameteroptionsschluessel: {type: string}
+        suchwerte:
+          type: array
+          items: {type: string}
+          minItems: 1
+      required: [suchparameteroptionsschluessel, suchwerte]
+    Kontext:
+      type: object
+      properties:
+        beauftragenderNutzer: {$ref: '#/components/schemas/Benutzer', description: Der
+            beauftragende Nutzer kann in bestimmten Anwendungsfällen (z.B. händisch
+            gestarteter Dateienrundlauf) vom ausführenden Nutzer (der im JWT übertragen
+            wird) abweichen.}
+        organisationseinheit: {$ref: '#/components/schemas/Organisationseinheit'}
+        teilnehmer: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+            287}
+        rolle: {$ref: '#/components/schemas/KatalogCode', description: 'z.B. Schutzpolizei,
+            Kriminalpolizei, Grenzschutz, SIRENE'}
+        anlass: {$ref: '#/components/schemas/KatalogCode', description: 'z.B. Verkehrskontrolle,
+            polizeiliche Überprüfung im Inland, Ermittlungen zu Strafverfahren, Identitätsfeststellung'}
+        client: {type: string, description: 'sprechender, eindeutiger Bezeichner des
+            anfragenden Clients für Statistik und Fehleranalyse; z.B. PLX'}
+      required: [beauftragenderNutzer, organisationseinheit, rolle, anlass, client]
+    Benutzer:
+      type: object
+      properties:
+        id: {type: string}
+        familienname: {type: string}
+        vorname: {type: string}
+        telefon: {type: string}
+        eMail: {type: string}
+      required: [id]
+    Organisationseinheit:
+      type: object
+      properties:
+        id: {type: string, description: 'policeofficeid (INPOL-BV) oder P20-Dienststellenschlüssel
+            (IAM, @rtus)'}
+        name: {type: string, description: 'INPOL-BV -> ?; IAM -> ?'}
+        telefon: {type: string}
+        eMail: {type: string}
+      required: [id]
+    Darstellungshinweis:
+      type: string
+      default: standard
+      enum: [standard, sequenzanfang, sequenzende]
+    DarstellungshinweisGruppe:
+      type: string
+      description: |
+        * `tabelle` - Die Darstellung einer Gruppe als Tabelle bietet sich an, wenn alle Untergruppen die gleichen Trefferdetails enthalten. Die Untergruppen entsprechen den Zeilen der Tabelle. * `liste` - Die Darstellung einer Gruppe als Liste bietet sich an, wenn alle Trefferdetails dieser Gruppe vom gleichen Typ sind / die gleichen Labels haben.
+      enum: [tabelle, liste]
+    DateValidierungsregelausdruck:
+      type: string
+      enum: ['^((0[1-9])|([1-2][0-9])|(3[0-1]))\.?((0[1-9])|(1[0-2]))\.?(([12])([0-9]{3}))$',
+        '^((0[1-9])|([1-2][0-9])|(3[0-1])|(--))\.?((0[1-9])|(1[0-2])|(--))\.?((([12])(([0-9]){3}))|(----))$',
+        '^((((0[1-9])|([1-2][0-9])|(3[0-1])|(--))\.?((0[1-9])|(1[0-2])))|((0[1-9])|(--))\.?(--))\.?((([12])(([0-9]){3})))$']
+      x-enum-varnames: [OHNEMINUSZEICHEN, MITMINUSZEICHEN, EINGESCHRAENKTEMINUSZEICHEN]
+      x-enum-descriptions: ['OHNEMINUSZEICHEN - Das Datum ist im Format TT.MM.JJJJ
+          oder TTMMJJJJ anzugeben. Es sind nur numerische Werte erlaubt die ein gültiges
+          Kalenderdatum darstellen, also z.B. 15.01.1980.', 'MITMINUSZEICHEN - Das
+          Datum ist im Format TT.MM.JJJJ oder TTMMJJJJ anzugeben. Für Tag, Monat oder
+          Jahr kann statt numerischer Werte der Platzhalter „--“ verwendet werden.
+          Gültige Suchen sind also z.B. 15.01.1980, --.01.1980 und 15.--.----.', 'EINGESCHRAENKTEMINUSZEICHEN
+          - Das Datum ist im Format TT.MM.JJJJ oder TTMMJJJJ anzugeben. Für Tag oder
+          für Tag und Monat kann statt numerischer Werte der Platzhalter „--“ verwendet
+          werden. Gültige Suchen sind also z.B. 15.01.1980, --.01.1980 und --.--.1980.']
+    TimeValidierungsregelausdruck:
+      type: string
+      enum: ['^(([0-1][0-9])|(2[0-3])):?(([0-5][0-9]))$']
+      x-enum-varnames: [UHRZEITFORMAT]
+      description: Die Uhrzeit ist im Format hh:mm oder hhmm anzugeben.
+    StringLatinValidierungsregelausdruck:
+      type: string
+      enum: ['^[\u0009-\u000a\u000d\u0020-\u007e\u00a0-\u00ac\u00ae-\u017e\u0187-\u0188\u018f\u0192\u0197\u01a0-\u01a1\u01af-\u01b0\u01b7\u01cd-\u01dc\u01de-\u01df\u01e2-\u01f0\u01f4-\u01f5\u01f8-\u01ff\u0212-\u0213\u0218-\u021b\u021e-\u021f\u0227-\u0233\u0259\u0268\u0292\u02b0\u02b3\u02b9-\u02ba\u02be-\u02bf\u02c6\u02c8\u02cc\u02dc\u02e2\u0300-\u0302\u0304\u0306-\u0308\u030b-\u030c\u0310\u0315\u031b\u0323\u0325-\u0328\u0331\u035f\u0386\u0388-\u038a\u038c\u038e-\u03a1\u03a3-\u03ce\u040d\u0410-\u042a\u042c\u042e-\u044a\u044c\u044e-\u044f\u045d\u1d48\u1d57\u1e02-\u1e03\u1e06-\u1e07\u1e0a-\u1e11\u1e1c-\u1e2b\u1e2f-\u1e37\u1e3a-\u1e3b\u1e40-\u1e49\u1e52-\u1e5b\u1e5e-\u1e63\u1e6a-\u1e6f\u1e80-\u1e87\u1e8c-\u1e97\u1e9e\u1ea0-\u1ef9\u2018-\u201a\u201c-\u201e\u2020-\u2021\u2026\u2030\u2039-\u203a\u2070\u2074-\u2079\u207f-\u2089\u20ac\u2122\u221e\u2264-\u2265]+$']
+      x-enum-varnames: [STRINGLATINFORMAT]
+      description: Alle im Zeichensatz String-Latin definierten Zeichen sind zulässig.
+    Wildcard:
+      type: object
+      properties:
+        einOderMehrereZeichen: {description: Als Wildcard für ein oder mehrere Zeichen
+            ist "*" zu verwenden., type: boolean, default: false}
+        genauEinZeichen: {description: 'Als Wildcard für genau ein Zeichen ist "?"
+            zu verwenden.', type: boolean, default: false}
+      required: [einOderMehrereZeichen, genauEinZeichen]
+    Validierungsregel:
+      type: object
+      discriminator: {propertyName: regeltyp}
+      properties:
+        regeltyp: {type: string}
+      required: [regeltyp]
+    CustomValidierungsregel:
+      type: object
+      allOf:
+      - {$ref: '#/components/schemas/Validierungsregel'}
+      - type: object
+        properties:
+          regulaererAusdruck: {type: string, example: '^[A-Z]*$'}
+          eingabehilfe: {type: string, example: Der Suchparamter darf nur die Zeichen
+              A-Z enthalten.}
+          fehlertext: {type: string, example: 'Der Suchparameter enthält Zeichen,
+              die nicht den Zeichen A-Z entsprechen.'}
+          wildcard: {$ref: '#/components/schemas/Wildcard'}
+        required: [regulaererAusdruck, eingabehilfe, fehlertext, wildcard]
+    StringLatinValidierungsregel:
+      type: object
+      allOf:
+      - {$ref: '#/components/schemas/Validierungsregel'}
+      - type: object
+        properties:
+          regulaererAusdruck: {$ref: '#/components/schemas/StringLatinValidierungsregelausdruck'}
+          wildcard: {$ref: '#/components/schemas/Wildcard'}
+        required: [regulaererAusdruck, wildcard]
+    DateValidierungsregel:
+      allOf:
+      - {$ref: '#/components/schemas/Validierungsregel'}
+      - type: object
+        properties:
+          regulaererAusdruck: {$ref: '#/components/schemas/DateValidierungsregelausdruck'}
+          erlaubtesDatumVon: {type: string, description: Bitte im Format TT.MM.JJJJ
+              angeben.}
+          erlaubtesDatumBis: {type: string, description: Bitte im Format TT.MM.JJJJ
+              angeben.}
+        required: [regulaererAusdruck]
+    TimeValidierungsregel:
+      allOf:
+      - {$ref: '#/components/schemas/Validierungsregel'}
+      - type: object
+        properties:
+          regulaererAusdruck: {$ref: '#/components/schemas/TimeValidierungsregelausdruck'}
+          erlaubteUhrzeitVon: {type: string, description: 'Bitte im Format hh:mm eingeben.'}
+          erlaubteUhrzeitBis: {type: string, description: 'Bitte im Format hh:mm eingeben.'}
+        required: [regulaererAusdruck]
+    Validierungsregelverknuepfung:
+      allOf:
+      - {$ref: '#/components/schemas/Validierungsregel'}
+      - type: object
+        properties:
+          operator: {$ref: '#/components/schemas/Operator'}
+          validierungsregeln:
+            type: array
+            items: {$ref: '#/components/schemas/Validierungsregel'}
+            minItems: 1
+        required: [operator, validierungsregeln]
+    Regel:
+      type: object
+      discriminator: {propertyName: regeltyp}
+      properties:
+        regeltyp: {type: string}
+        operator: {$ref: '#/components/schemas/Operator'}
+        fehlertext: {type: string}
+      required: [regeltyp, operator]
+    Verknuepfung:
+      allOf:
+      - {$ref: '#/components/schemas/Regel'}
+      - type: object
+        properties:
+          regeln:
+            type: array
+            items: {$ref: '#/components/schemas/Regel'}
+            minItems: 1
+        required: [regeln]
+    Bedingung:
+      allOf:
+      - {$ref: '#/components/schemas/Regel'}
+      - type: object
+        properties:
+          schluessel: {type: string}
+          werte:
+            type: array
+            items: {type: string, description: Reguläre Ausdrücke sind zulässig}
+            minItems: 1
+        required: [schluessel, werte]
+    Operator:
+      type: string
+      enum: [alle, mindestensEins, genauEins, keins]
+      default: mindestensEins
+    Abhaengigkeit:
+      type: object
+      discriminator: {propertyName: artDerAbhaengigkeit}
+      properties:
+        artDerAbhaengigkeit: {type: string}
+        ausloeser: {$ref: '#/components/schemas/Regel'}
+      required: [artDerAbhaengigkeit, ausloeser]
+    Elementabhaengigkeit:
+      allOf:
+      - {$ref: '#/components/schemas/Abhaengigkeit'}
+      - type: object
+        properties:
+          abhaengigeElemente:
+            description: Schlüssel der abhängigen Elemente. Abhängige Elemente können
+              Suchparameter oder Formularelemente sein.
+            type: array
+            items: {type: string}
+            minItems: 1
+        required: [abhaengigeElemente]
+    Sichtbarkeitsabhaengigkeit:
+      description: Bei dieser Form der Abhängigkeit geht es um die Sichtbarkeit (oder
+        Unsichtbarkeit) des Suchparameters oder Formularelementes. Der genauere Name
+        Elementsichtbarkeitsabhängigkeit beschreibt seine Funktion besser.
+      allOf:
+      - {$ref: '#/components/schemas/Elementabhaengigkeit'}
+      - type: object
+        properties:
+          sichtbar: {type: boolean, default: true}
+    Optionssichtbarkeitsabhaengigkeit:
+      description: Bei dieser Form der Abhängigkeit geht es um die Sichtbarkeit (oder
+        Unsichtbarkeit) der Optionen (bzw. einer Teilmenge der Optionen) des Suchparameters
+        oder Formularelementes.
+      allOf:
+      - {$ref: '#/components/schemas/Elementabhaengigkeit'}
+      - type: object
+        properties:
+          optionsbeschreibungen:
+            type: array
+            items: {$ref: '#/components/schemas/Option'}
+            minItems: 1
+        required: [optionsbeschreibungen]
+    Validierungsabhaengigkeit:
+      allOf:
+      - {$ref: '#/components/schemas/Elementabhaengigkeit'}
+      - type: object
+        properties:
+          validierungsregel: {$ref: '#/components/schemas/Validierungsregel'}
+        required: [validierungsregel]
+    Regelabhaengigkeit:
+      allOf:
+      - {$ref: '#/components/schemas/Abhaengigkeit'}
+      - type: object
+        properties:
+          validierungsregel: {$ref: '#/components/schemas/Regel'}
+        required: [validierungsregel]
+    Pflichtfeldabhaengigkeit:
+      allOf:
+      - {$ref: '#/components/schemas/Elementabhaengigkeit'}
+      - type: object
+        properties:
+          obligatorisch: {type: boolean, default: true}
+    Systembeschreibung:
+      type: object
+      properties:
+        systemschluessel: {type: string}
+        systemname: {type: string}
+        beschreibung: {type: string}
+      required: [systemschluessel, systemname]
+    Option:
+      type: object
+      properties:
+        schluessel: {type: string}
+        name: {type: string}
+        beschreibung: {type: string}
+      required: [schluessel, name]
+    Information:
+      type: object
+      discriminator: {propertyName: informationstyp}
+      properties:
+        informationstyp: {type: string}
+        nachricht: {type: string}
+        details:
+          type: array
+          items: {type: string}
+      required: [informationstyp, nachricht]
+    Hinweis:
+      allOf:
+      - {$ref: '#/components/schemas/Information'}
+      - type: object
+        properties:
+          prioritaet:
+            type: string
+            enum: [standard, hoch]
+            default: standard
+    Fehler:
+      allOf:
+      - {$ref: '#/components/schemas/Information'}
+      - type: object
+        properties:
+          fehlerquelle: {$ref: '#/components/schemas/Fehlerquelle'}
+          fehlerklasse:
+            type: string
+            enum: [technisch, fachlich]
+        required: [fehlerquelle, fehlerklasse]
+    Fehlerquelle:
+      type: object
+      properties:
+        fehlerverursacherkategorie:
+          type: string
+          description: Kategorie des (vermuteten) Fehlerverursachers
+          enum: [fremdsystem, adapter, zimp, client]
+        fehlermelderkategorie:
+          type: string
+          description: Kategorie der Komponente, die den Fehler meldet bzw. das Fehler-Objekt
+            erzeugt
+          enum: [adapter, zimp]
+        fehlermelderkomponente: {type: string, description: 'Komponente, die den Fehler
+            meldet bzw. das Fehler-Objekt erzeugt, z.B. IMA'}
+      required: [fehlerverursacherkategorie, fehlermelderkategorie]
+    Version:
+      type: object
+      properties:
+        komponente: {type: string}
+        version: {type: string}
+        build: {type: string}
+        revision: {type: string}
+      required: [komponente, version]
+    PageInfo:
+      type: object
+      properties:
+        totalPages: {type: integer}
+        totalElements: {type: integer, format: int64}
+    Markierung:
+      type: object
+      properties:
+        grundDerMarkierung: {type: string}
+    FormularUndFehler:
+      type: object
+      properties:
+        formular: {$ref: '#/components/schemas/Formular'}
+        inBearbeitung: {type: boolean, default: false, description: 'Ob das gelieferte
+            Formular im Bearbeitungsmodus geöffnet werden soll (z.B. Editieren) oder
+            nicht (z.B. Speichern), hängt von der ausgeführten Aktion ab.'}
+        fehler:
+          type: array
+          items: {$ref: '#/components/schemas/Fehler'}
+    Formular:
+      type: object
+      properties:
+        systemschluessel: {type: string}
+        postfachschluessel: {type: string}
+        systemname: {type: string}
+        formularschluessel: {type: string}
+        formularartname: {type: string}
+        elemente:
+          type: array
+          items: {$ref: '#/components/schemas/FormularelementOderGruppe'}
+          minItems: 1
+        impFachdaten: {$ref: '#/components/schemas/ImpFachdaten'}
+        regeln:
+          type: array
+          items: {$ref: '#/components/schemas/Regel'}
+        abhaengigkeiten:
+          type: array
+          items: {$ref: '#/components/schemas/Abhaengigkeit'}
+      required: [systemschluessel, systemname, formularschluessel, formularartname,
+        elemente]
+    FormularelementOderGruppe:
+      type: object
+      discriminator: {propertyName: formularelementtyp}
+      properties:
+        formularelementtyp: {type: string}
+        label: {type: string}
+      required: [formularelementtyp]
+    Formularelement:
+      allOf:
+      - {$ref: '#/components/schemas/FormularelementOderGruppe'}
+      - type: object
+        properties:
+          formularelementschluessel: {type: string}
+          obligatorisch: {type: boolean, default: false}
+          editierbar: {type: boolean, default: false}
+          fachobjektreferenzen:
+            type: array
+            items: {$ref: '#/components/schemas/Fachobjektreferenz'}
+        required: [formularelementschluessel, obligatorisch, editierbar]
+    Formularlink:
+      description: Verweis auf anderes/weiteres Formular
+      allOf:
+      - {$ref: '#/components/schemas/Formularelement'}
+      - type: object
+        properties:
+          wert: {type: string, description: angezeigter Text des Links}
+          systemschluessel: {type: string}
+          postfachschluessel: {type: string}
+          formularschluessel: {type: string}
+        required: [systemschluessel, postfachschluessel, formularschluessel]
+    BooleanFormularelement:
+      allOf:
+      - {$ref: '#/components/schemas/Formularelement'}
+      - type: object
+        properties:
+          wert: {type: boolean}
+    StringFormularelement:
+      allOf:
+      - {$ref: '#/components/schemas/Formularelement'}
+      - type: object
+        properties:
+          format:
+            type: string
+            enum: [einzeilig, mehrzeilig, html]
+            default: einzeilig
+          platzhalter: {type: string}
+          wert: {type: string}
+          validierungsregel: {$ref: '#/components/schemas/Validierungsregel'}
+    LinkFormularelement:
+      allOf:
+      - {$ref: '#/components/schemas/Formularelement'}
+      - type: object
+        properties:
+          url: {type: string}
+          wert: {type: string}
+    SingleChoiceFormularelement:
+      allOf:
+      - {$ref: '#/components/schemas/Formularelement'}
+      - type: object
+        properties:
+          optionen:
+            type: array
+            items: {$ref: '#/components/schemas/Option'}
+            minItems: 1
+          wert: {type: string, description: Optionsschlüssel}
+        required: [optionen]
+    MultipleChoiceFormularelement:
+      allOf:
+      - {$ref: '#/components/schemas/Formularelement'}
+      - type: object
+        properties:
+          optionen:
+            type: array
+            items: {$ref: '#/components/schemas/Option'}
+            minItems: 1
+          werte:
+            type: array
+            items: {type: string, description: Optionsschlüssel}
+        required: [optionen]
+    TreeFormularelement:
+      allOf:
+      - {$ref: '#/components/schemas/Formularelement'}
+      - type: object
+        properties:
+          multipleChoiceErlaubt: {type: boolean, description: 'Dürfen mehrere Knoten
+              ausgewählt werden?', default: true}
+          optionen:
+            type: array
+            items: {$ref: '#/components/schemas/TreeNode'}
+            minItems: 1
+          werte:
+            type: array
+            items: {type: string, description: Optionsschlüssel}
+        required: [optionen]
+    TreeNode:
+      allOf:
+      - {$ref: '#/components/schemas/Option'}
+      - type: object
+        properties:
+          auswaehlbar: {type: boolean, description: 'Ist dieser Knoten auswählbar?',
+            default: true}
+          aktiv: {type: boolean, default: true}
+          hervorgehoben: {type: boolean, default: false}
+          treeNodes:
+            type: array
+            items: {$ref: '#/components/schemas/TreeNode'}
+    Anlagegruppe:
+      allOf:
+      - {$ref: '#/components/schemas/FormularelementOderGruppe'}
+      - type: object
+        properties:
+          anlagegruppenschluessel: {type: string}
+          maxGroesseKb: {type: integer}
+          anlagen:
+            type: array
+            items: {$ref: '#/components/schemas/Formularelementgruppe'}
+            minItems: 1
+        required: [anlagegruppenschluessel, anlagen]
+    Formularelementgruppe:
+      allOf:
+      - {$ref: '#/components/schemas/FormularelementOderGruppe'}
+      - type: object
+        properties:
+          elemente:
+            type: array
+            items: {$ref: '#/components/schemas/FormularelementOderGruppe'}
+          darstellungshinweise:
+            type: array
+            items: {$ref: '#/components/schemas/DarstellungshinweisGruppe'}
+    FormularUndKontext:
+      type: object
+      properties:
+        formular: {$ref: '#/components/schemas/Formular'}
+        kontext: {$ref: '#/components/schemas/Kontext'}
+      required: [formular, kontext]
+    FachobjektUndIndex:
+      type: object
+      properties:
+        fachobjekt: {$ref: '#/components/schemas/Fachobjekt'}
+        impFachdatenIndex: {type: integer}
+      required: [fachobjekt, impFachdatenIndex]
+    FormularelementgruppeUndFehler:
+      type: object
+      discriminator: {propertyName: typ}
+      properties:
+        typ: {type: string}
+        formularelementgruppe: {$ref: '#/components/schemas/Formularelementgruppe'}
+        fehler:
+          type: array
+          items: {$ref: '#/components/schemas/Fehler'}
+      required: [typ]
+    FormularelementgruppeFachobjektUndFehler:
+      allOf:
+      - {$ref: '#/components/schemas/FormularelementgruppeUndFehler'}
+      - type: object
+        properties:
+          fachobjekt: {$ref: '#/components/schemas/Fachobjekt'}
+    Fachobjektreferenz:
+      type: object
+      description: Referenz auf ein Attribut eines IMP-Fachobjektes
+      properties:
+        fachobjekt: {type: string, description: Pfad des Fachobjektes}
+        attribut: {type: string, description: relativer Pfad (im Bezug auf das Fachobjekt)
+            des Fachobjektattributes}
+      required: [fachobjekt, attribut]
+    PdfInput:
+      type: object
+      discriminator: {propertyName: pdfInputTyp}
+      properties:
+        pdfInputTyp: {type: string}
+        deckblatt: {type: boolean, default: true}
+      required: [pdfInputTyp]
+    Adresse:
+      allOf:
+      - {$ref: '#/components/schemas/Fachobjekt'}
+      - type: object
+        properties:
+          strasse: {type: string, description: IMP-Pfad adresstyp.lagePostanschrift.anschrift.strasse}
+          hausnummer: {type: string, description: IMP-Pfad adresstyp.lagePostanschrift.anschrift.hausnummer}
+          plz: {type: string, description: IMP-Pfad adresstyp.lagePostanschrift.anschrift.plzOrt.plz}
+          ortsname: {type: string, description: IMP-Pfad adresstyp.lagePostanschrift.anschrift.plzOrt.ortsname}
+          staat: {$ref: '#/components/schemas/Katalogeintrag', description: 'IMP-Pfad
+              adresstyp.lagePostanschrift.anschrift.plzOrt.staat, IMP-Katalog 285'}
+          bemerkung: {type: string}
+          dokument:
+            type: array
+            items: {$ref: '#/components/schemas/Dokument'}
+    Benutzerkonto:
+      allOf:
+      - {$ref: '#/components/schemas/Fachobjekt'}
+      - type: object
+        properties:
+          bezeichnung: {type: string}
+          kennung: {type: string}
+          bemerkung: {type: string}
+    BeteiligteStelle:
+      type: object
+      discriminator: {propertyName: beteiligtestelletyp}
+      properties:
+        beteiligtestelletyp: {type: string}
+        art: {$ref: '#/components/schemas/Katalogeintrag', description: IMP-Katalog
+            212}
+        aktenzeichen:
+          type: array
+          items: {type: string}
+        bemerkung: {type: string}
+      required: [beteiligtestelletyp, art]
+    BeteiligteStelleBeteiligungsart:
+      allOf:
+      - {$ref: '#/components/schemas/BeteiligteStelle'}
+      - type: object
+        properties:
+          artDerBeteiligung: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+              213}
+    Beziehung:
+      type: object
+      discriminator: {propertyName: beziehungtyp}
+      properties:
+        beziehungtyp: {type: string}
+        id: {type: string}
+        rolle: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+            001}
+        richtungsrelevant: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+            217}
+        id1: {type: string, description: ID des ersten Fachobjektes (fachobjekt.id)}
+        id2: {type: string, description: ID des zweiten Fachobjektes (fachobjekt.id)}
+        bezeichnung: {type: string}
+        bemerkung: {type: string}
+        beginndatum: {$ref: '#/components/schemas/DatumZeit'}
+        enddatum: {$ref: '#/components/schemas/DatumZeit'}
+      required: [beziehungtyp, id]
+    BeziehungAllgemein:
+      allOf:
+      - {$ref: '#/components/schemas/Beziehung'}
+    BeziehungPersonStraftat:
+      allOf:
+      - {$ref: '#/components/schemas/Beziehung'}
+    BeziehungVorgangStraftat:
+      allOf:
+      - {$ref: '#/components/schemas/Beziehung'}
+    BeziehungHoheitlicheMassnahmePerson:
+      allOf:
+      - {$ref: '#/components/schemas/Beziehung'}
+    DigitaleDaten:
+      type: object
+      properties:
+        mimeType: {type: string}
+        dateiId: {type: string}
+        absenderId: {type: string}
+        datei: {$ref: '#/components/schemas/Datei'}
+      required: [mimeType, dateiId, absenderId]
+    Datei:
+      type: object
+      discriminator: {propertyName: dateityp}
+      properties:
+        dateityp: {type: string}
+      required: [dateityp]
+    Daten:
+      allOf:
+      - {$ref: '#/components/schemas/Datei'}
+      - type: object
+        properties:
+          daten: {type: string, format: byte}
+    Download:
+      allOf:
+      - {$ref: '#/components/schemas/Datei'}
+      - type: object
+        properties:
+          download: {type: string}
+    Dokument:
+      allOf:
+      - {$ref: '#/components/schemas/Fachobjekt'}
+      - type: object
+        properties:
+          art: {$ref: '#/components/schemas/Katalogeintrag', description: IMP-Katalog
+              388}
+          betreff: {type: string}
+          bezeichnung: {type: string}
+          bemerkung: {type: string}
+          erstelldatum: {$ref: '#/components/schemas/SIMPDatumPattern'}
+          originaldokument: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+              217}
+          digitaleDaten: {$ref: '#/components/schemas/DigitaleDaten', description: 'IMP-Pfad
+              digitaleDaten[0]'}
+    Fachobjekt:
+      type: object
+      discriminator: {propertyName: fachobjekttyp}
+      properties:
+        fachobjekttyp: {type: string}
+        id: {type: string, description: 'innerhalb eines IMP-Graphen eindeutige techn.
+            ID, die von Beziehungen referenziert wird'}
+        quellId: {type: string, description: im Informationssystem verwendete eindeutige
+            ID}
+      required: [fachobjekttyp, id]
+    Finanztransaktion:
+      allOf:
+      - {$ref: '#/components/schemas/Fachobjekt'}
+      - type: object
+        properties:
+          art: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+              106}
+          transaktionsID: {type: string}
+          verwendungszweck: {type: string}
+          transaktionswaehrung: {$ref: '#/components/schemas/Katalogeintrag', description: 'IMP-Pfad
+              transaktionsbetrag.waehrung, IMP-Katalog 230'}
+          transaktionsbetrag: {type: number, description: IMP-Pfad transaktionsbetrag.betrag}
+          transaktionsdatum: {$ref: '#/components/schemas/DatumZeit'}
+          valutadatum: {$ref: '#/components/schemas/DatumZeit'}
+          dokument:
+            type: array
+            items: {$ref: '#/components/schemas/Dokument'}
+    Geld:
+      allOf:
+      - {$ref: '#/components/schemas/Fachobjekt'}
+      - type: object
+        properties:
+          art: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+              104}
+          seriennummer: {type: string}
+          ausgabejahr: {type: integer}
+          erkenntnisseAusVerdeckterMassnahme: {$ref: '#/components/schemas/KatalogCode',
+            description: IMP-Katalog 217}
+          bemerkung: {type: string}
+          waehrung: {$ref: '#/components/schemas/Katalogeintrag', description: 'IMP-Pfad
+              nennwert.waehrung, IMP-Katalog 230'}
+          betrag: {type: number, description: IMP-Pfad nennwert.betrag}
+          dokument:
+            type: array
+            items: {$ref: '#/components/schemas/Dokument'}
+    Bargeld:
+      allOf:
+      - {$ref: '#/components/schemas/Geld'}
+      - type: object
+        properties:
+          bezeichnung: {type: string}
+          ausgabeStaat: {$ref: '#/components/schemas/Katalogeintrag', description: IMP-Katalog
+              208}
+          emittent: {$ref: '#/components/schemas/Katalogeintrag', description: IMP-Katalog
+              209}
+    Falschgeld:
+      allOf:
+      - {$ref: '#/components/schemas/Geld'}
+    HoheitlicheMassnahme:
+      allOf:
+      - {$ref: '#/components/schemas/Fachobjekt'}
+      - type: object
+        properties:
+          art: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+              108}
+          bezeichnung: {type: string}
+          verdeckteMassnahme: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+              217}
+          bemerkung: {type: string}
+          beginn: {$ref: '#/components/schemas/DatumZeit'}
+          ende: {$ref: '#/components/schemas/DatumZeit'}
+          dokument:
+            type: array
+            items: {$ref: '#/components/schemas/Dokument'}
+        required: [art, beginn]
+    ImpFachdaten:
+      type: object
+      properties:
+        objekte:
+          description: Die Reihenfolge der Fachobjekte im Array ist in JSON festgelegt,
+            s.a. RFC 8259.
+          type: array
+          items: {$ref: '#/components/schemas/Fachobjekt'}
+        beziehungen:
+          type: array
+          items: {$ref: '#/components/schemas/Beziehung'}
+    Internetressource:
+      allOf:
+      - {$ref: '#/components/schemas/Fachobjekt'}
+      - type: object
+        properties:
+          art: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+              315}
+          bezeichnung: {type: string}
+          uRI: {type: string}
+          bemerkung: {type: string}
+          iPv4: {type: string}
+          dokument:
+            type: array
+            items: {$ref: '#/components/schemas/Dokument'}
+        required: [bezeichnung]
+    Katalogeintrag:
+      description: Eintrag in einem abgeschlossenen IMP-Katalog
+      type: object
+      x-abstract: true
+      discriminator: {propertyName: katalogeintragstyp}
+      properties:
+        katalogeintragstyp: {type: string, description: Typ des Katalogeintrages}
+        katalog: {type: string, description: 'Schlüssel des Kataloges gemäß XPolizei-TYP3-Codelisten;
+            entspricht der Nummer im Namen des IMP-Katalogcode-Objekts, z.B. 118 in
+            KatalogCode118'}
+        wert: {type: string, description: Wert des Katalogeintrags}
+      required: [katalogeintragstyp, katalog, wert]
+    KatalogCode:
+      description: Eintrag in einem abgeschlossenen IMP-Katalog
+      allOf:
+      - {$ref: '#/components/schemas/Katalogeintrag'}
+      - type: object
+        properties:
+          version: {type: string, description: 'Version des Kataloges im Format "V<major>.<minor>",
+              z.B. V1.2'}
+          code: {type: string, description: Schlüssel/Code des Katalogeintrags}
+        required: [version, code]
+    KatalogCodeNichtAbgeschlossen:
+      description: zusätzlicher Eintrag in einem nicht abgeschlossenen IMP-Katalog
+      allOf:
+      - {$ref: '#/components/schemas/Katalogeintrag'}
+    Kommunikationsanschluss:
+      allOf:
+      - {$ref: '#/components/schemas/Fachobjekt'}
+      - type: object
+        properties:
+          art: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+              110}
+          bezeichnung: {type: string}
+          kennung: {type: string}
+          rufnummer: {type: string}
+          bemerkung: {type: string}
+    Konto:
+      allOf:
+      - {$ref: '#/components/schemas/Fachobjekt'}
+      - type: object
+        properties:
+          art: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+              112}
+          kontotyp: {$ref: '#/components/schemas/Katalogeintrag', description: IMP-Katalog
+              238}
+          waehrung: {$ref: '#/components/schemas/Katalogeintrag', description: IMP-Katalog
+              230}
+          eroeffnungsdatum: {$ref: '#/components/schemas/SIMPDatumPattern'}
+          schliessungsdatum: {$ref: '#/components/schemas/SIMPDatumPattern'}
+          bemerkung: {type: string}
+          kontonummer: {type: string, description: IMP-Pfad bankkontoinformation.kontonummer}
+          bankleitzahl: {type: string}
+          iban: {type: string, description: IMP-Pfad bankkontoinformation.iBAN}
+          bic: {type: string, description: IMP-Pfad bankkontoinformation.bIC}
+          bankname: {type: string, description: IMP-Pfad bankkontoinformation.bankname}
+          bankstandort: {type: string, description: IMP-Pfad bankkontoinformation.bankstandort}
+          staat: {$ref: '#/components/schemas/Katalogeintrag', description: 'IMP-Pfad
+              bankkontoinformation.staat, IMP-Katalog 285'}
+    Kraftfahrzeug:
+      allOf:
+      - {$ref: '#/components/schemas/Fachobjekt'}
+      - type: object
+        properties:
+          art: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+              113}
+          marke: {$ref: '#/components/schemas/Katalogeintrag', description: IMP-Katalog
+              240}
+          fahrzeugidentifizierungsnummer: {type: string}
+          kennzeichen: {type: string, description: 'IMP-Pfad zulassungsinformation[0].KfzKennzeicheninformation.kennzeichen'}
+          farbe: {$ref: '#/components/schemas/Farbangabe'}
+          bezeichnung: {type: string}
+          bemerkung: {type: string}
+          erstzulassung: {$ref: '#/components/schemas/SIMPDatumPattern'}
+          nummernangabeBeiFahrzeugen:
+            type: array
+            items: {$ref: '#/components/schemas/NummernangabeBeiFahrzeugen'}
+          staat: {$ref: '#/components/schemas/Katalogeintrag', description: 'IMP-Pfad
+              zulassungsinformation[0].zulassungsstelle.anschrift.pLZOrt.staat, IMP-Katalog
+              285'}
+          dokument:
+            type: array
+            items: {$ref: '#/components/schemas/Dokument'}
+    NummernangabeBeiFahrzeugen:
+      type: object
+      properties:
+        art: {$ref: '#/components/schemas/Katalogeintrag', description: IMP-Katalog
+            225}
+        nummer: {type: string}
+      required: [art, nummer]
+    Material:
+      type: object
+      properties:
+        art: {$ref: '#/components/schemas/Katalogeintrag', description: IMP-Katalog
+            242}
+        bezeichnung: {type: string}
+        bemerkung: {type: string}
+    Nummernangabe:
+      type: object
+      properties:
+        nummer: {type: string}
+        bezeichnung: {type: string}
+        individualnummer: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+            217}
+    Organisation:
+      allOf:
+      - {$ref: '#/components/schemas/Fachobjekt'}
+      - type: object
+        properties:
+          art: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+              116}
+          name: {type: string, description: IMP-Pfad name.bezeichnung}
+          nameAbweichendeSchreibweise: {type: string, description: IMP-Pfad name.abweichendeSchreibweise}
+          bezeichnung: {type: string}
+          registereintrag: {type: string, description: IMP-Pfad registereintrag.nummer}
+          branche: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+              204}
+          nationaleZugehoerigkeit: {$ref: '#/components/schemas/Katalogeintrag', description: IMP-Katalog
+              208}
+          gruendungsdatum: {$ref: '#/components/schemas/SIMPDatumPattern'}
+          aufloesungsdatum: {$ref: '#/components/schemas/SIMPDatumPattern'}
+          steuernummer: {type: string, description: 'IMP-Pfad nummerDerOrganisation.nummer[0].nummernwert
+              & nummerDerOrganisation.nummer.art.code = 365_2'}
+          nationaleRechtsform: {$ref: '#/components/schemas/Katalogeintrag', description: IMP-Katalog
+              250}
+          bemerkung: {type: string}
+          gruendungsstaat: {$ref: '#/components/schemas/Katalogeintrag', description: IMP-Katalog
+              285}
+          dokument:
+            type: array
+            items: {$ref: '#/components/schemas/Dokument'}
+    Person:
+      allOf:
+      - {$ref: '#/components/schemas/Fachobjekt'}
+    Personalie:
+      allOf:
+      - {$ref: '#/components/schemas/Fachobjekt'}
+      - type: object
+        properties:
+          art: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+              117}
+          fuehrungspersonalie: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+              217}
+          geburtsname: {type: string, description: IMP-Pfad geburtsname.bezeichnung}
+          familienname: {type: string, description: IMP-Pfad familienname.bezeichnung}
+          vorname: {type: string, description: IMP-Pfad vorname.bezeichnung}
+          spitzname: {type: string, description: IMP-Pfad spitzname.bezeichnung}
+          nichtZuordenbarerName: {type: string, description: IMP-Pfad nichtZuordenbarerName.bezeichnung}
+          geschlecht: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+              255}
+          geburtsdatum: {$ref: '#/components/schemas/SIMPDatumPattern'}
+          geburtsort: {type: string}
+          geburtsstaat: {$ref: '#/components/schemas/Katalogeintrag', description: IMP-Katalog
+              285}
+          staatsangehoerigkeit:
+            type: array
+            items: {$ref: '#/components/schemas/Katalogeintrag', description: 'IMP-Pfad
+                staatsangehoerigkeit[0].staat, IMP-Katalog 208'}
+          personenidentifikationsnummer:
+            type: array
+            items: {$ref: '#/components/schemas/Personenidentifikationsnummer'}
+          bemerkung: {type: string}
+          personengebundenerHinweis:
+            type: array
+            items: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+                256}
+          ermittlungsunterstuetzenderHinweis:
+            type: array
+            items: {$ref: '#/components/schemas/ErmittlungsunterstuetzenderHinweis'}
+          aufenthaltsrechtlicherStatus: {type: string}
+          sterbedatum: {$ref: '#/components/schemas/DatumZeit'}
+          dokument:
+            type: array
+            items: {$ref: '#/components/schemas/Dokument'}
+        required: [art]
+    Personenidentifikationsnummer:
+      type: object
+      properties:
+        art: {$ref: '#/components/schemas/Katalogeintrag', description: IMP-Katalog
+            322}
+        nummernwert: {type: string}
+    ErmittlungsunterstuetzenderHinweis:
+      type: object
+      properties:
+        eHW: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog 354}
+        eHWAuspraegung: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+            355}
+    SonstigeSache:
+      allOf:
+      - {$ref: '#/components/schemas/Fachobjekt'}
+      - type: object
+        properties:
+          art: {$ref: '#/components/schemas/Katalogeintrag', description: IMP-Katalog
+              119}
+          bemerkung: {type: string}
+          bezeichnung: {type: string}
+          modell: {type: string}
+          herstellerbezeichnung: {type: string, description: IMP-Pfad herstellerinformation.herstellerbezeichnung}
+          nummernangabe:
+            type: array
+            items: {$ref: '#/components/schemas/Nummernangabe'}
+          laengewertangabe: {type: string, description: IMP-Pfad laenge.wertangabe.wert}
+          laengemasseinheit: {type: string, description: 'IMP-Pfad laenge.masseinheit,
+              IMP-Katalog 207'}
+          farbe:
+            type: array
+            items: {$ref: '#/components/schemas/Farbangabe'}
+          material:
+            type: array
+            items: {$ref: '#/components/schemas/Material'}
+          dokument:
+            type: array
+            items: {$ref: '#/components/schemas/Dokument'}
+    Straftat:
+      allOf:
+      - {$ref: '#/components/schemas/Fachobjekt'}
+      - type: object
+        properties:
+          delikt: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+              121}
+          bezeichnung: {type: string}
+          kurzdarstellung: {type: string}
+          relevanz: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+              273}
+          europaeischeStraftatenkategorie: {$ref: '#/components/schemas/Katalogeintrag',
+            description: IMP-Katalog 272}
+          spezifikation: {type: string}
+          beginn: {$ref: '#/components/schemas/DatumZeit'}
+          ende: {$ref: '#/components/schemas/DatumZeit'}
+          dokument:
+            type: array
+            items: {$ref: '#/components/schemas/Dokument'}
+    DatumZeit:
+      type: object
+      description: Datum mit Uhrzeit
+      properties:
+        datum:
+          type: string
+          allOf:
+          - {$ref: '#/components/schemas/SIMPDatumPattern'}
+        zeit: {type: string, pattern: '^(([0-1][0-9])|(2[0-3])|(\\\?[0-9])|(\\\?){2}|([0-2]\\\?))(\\\?|[0-5])(\\\?|[0-9])(\\\?|[0-5])(\\\?|[0-9])$'}
+        zeitzone: {type: string, pattern: '^Z|([+-])(([0-1][0-9])|(2[0-3]))(:[0-5][0-9])?$'}
+      required: [datum]
+    Farbangabe:
+      type: object
+      properties:
+        farbe: {$ref: '#/components/schemas/Katalogeintrag', description: IMP-Katalog
+            228}
+        farbeffekt: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+            229}
+        bezeichnung: {type: string}
+      required: [farbe]
+    SIMPDatumPattern: {type: string, description: IMP-Datumsformat, pattern: '^((([12]|\\\?)(([0-9]|(\\\?)){3}))((\\\?[0-9])|(0\\\?)|(0[1-9])|(1\\\?)|(1[0-2])|(\\\?\\\?))((0[1-9])|([1-2][0-9])|(3[0-1])|(\\\?\\\?)|([0-3]\\\?)|(\\\?[0-9])))$'}
+    Urkunde:
+      allOf:
+      - {$ref: '#/components/schemas/Fachobjekt'}
+      - type: object
+        properties:
+          art: {$ref: '#/components/schemas/Katalogeintrag', description: IMP-Katalog
+              122}
+          bezeichnung: {type: string}
+          nummernangabe:
+            type: array
+            items: {$ref: '#/components/schemas/Nummernangabe'}
+          nationalitaet: {$ref: '#/components/schemas/Katalogeintrag', description: IMP-Katalog
+              398}
+          ausstellungszeitpunkt:
+            allOf:
+            - {$ref: '#/components/schemas/SIMPDatumPattern'}
+            description: IMP-Pfad ausstellungszeitpunkt.datum
+          ausgestelltVon: {type: string, description: IMP-Pfad ausgestelltVon.behoerdenkennzeichnung.bezeichnung}
+          gueltigVon: {$ref: '#/components/schemas/SIMPDatumPattern'}
+          gueltigBis: {$ref: '#/components/schemas/SIMPDatumPattern'}
+          faelschungArt: {$ref: '#/components/schemas/KatalogCode', description: 'IMP-Pfad
+              faelschung.art, IMP-Katalog 222'}
+          bemerkung: {type: string}
+          eUFuehrerscheinklasse:
+            type: array
+            items: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+                354}
+          dokument:
+            type: array
+            items: {$ref: '#/components/schemas/Dokument'}
+    Vorgang:
+      type: object
+      allOf:
+      - {$ref: '#/components/schemas/Fachobjekt'}
+      - type: object
+        properties:
+          art: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+              123}
+          kategorie: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+              330}
+          bezeichnung: {type: string}
+          nummer: {type: string}
+          prioritaet: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+              235}
+          beginnzeitpunkt: {$ref: '#/components/schemas/DatumZeit'}
+          endzeitpunkt: {$ref: '#/components/schemas/DatumZeit'}
+          beteiligung:
+            type: array
+            items: {$ref: '#/components/schemas/BeteiligteStelleBeteiligungsart'}
+            minItems: 1
+          bemerkung: {type: string}
+          dokument:
+            type: array
+            items: {$ref: '#/components/schemas/Dokument'}
+        required: [art, nummer, beginnzeitpunkt, beteiligung]
+    Waffe:
+      allOf:
+      - {$ref: '#/components/schemas/Fachobjekt'}
+      - type: object
+        properties:
+          bezeichnung: {type: string}
+          modell: {type: string}
+          nummernangabe:
+            type: array
+            items: {$ref: '#/components/schemas/Nummernangabe'}
+          bemerkung: {type: string}
+          dokument:
+            type: array
+            items: {$ref: '#/components/schemas/Dokument'}
+    Schusswaffe:
+      allOf:
+      - {$ref: '#/components/schemas/Waffe'}
+      - type: object
+        properties:
+          art: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+              291}
+          hersteller: {$ref: '#/components/schemas/Katalogeintrag', description: 'IMP-Pfad
+              schusswaffenherstellungsinformation.hersteller, IMP-Katalog 290'}
+          herstellungsstaat: {$ref: '#/components/schemas/Katalogeintrag', description: 'IMP-Pfad
+              schusswaffenherstellungsinformation.herstellungsstaat, IMP-Katalog 285'}
+          angabenZuPruefzeichen: {type: string}
+          kaliberXWaffe: {$ref: '#/components/schemas/Katalogeintrag', description: 'IMP-Pfad
+              kaliberXWaffe[0], IMP-Katalog 295'}
+          eUKategorie: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+              306}
+          kategorie: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+              305}
+        required: [kategorie]
+    Zahlungskarte:
+      allOf:
+      - {$ref: '#/components/schemas/Fachobjekt'}
+      - type: object
+        properties:
+          art: {$ref: '#/components/schemas/KatalogCode', description: IMP-Katalog
+              125}
+          bezeichnung: {type: string}
+          gueltigVon: {$ref: '#/components/schemas/SIMPDatumPattern'}
+          gueltigBis: {$ref: '#/components/schemas/SIMPDatumPattern'}
+          emittent: {type: string}
+          nummer: {type: string}
+          name: {type: string}
+          bemerkung: {type: string}
+          kontonummer: {type: string, description: IMP-Pfad konto.nummer}
+          bankname: {type: string, description: IMP-Pfad konto.bankname}
+          staat: {$ref: '#/components/schemas/Katalogeintrag', description: 'IMP-Pfad
+              konto.staat, IMP-Katalog 285'}
+          dokument:
+            type: array
+            items: {$ref: '#/components/schemas/Dokument'}
+        required: [art]
+  securitySchemes:
+    bearerAuth: {type: http, scheme: bearer, bearerFormat: JWT}
+  responses:
+    Unauthorized: {description: 'kein, bzw. kein gültiges JWT angegeben'}
+    Forbidden: {description: 'Zugriff auf Ressource, für die der Nutzer nicht berechtigt
+        ist'}
+    BadRequest: {description: Anfrage ungültig}
+    InternalServerError:
+      description: unerwarteter Fehler auf Server-Seite
+      content:
+        application/json;charset=UTF-8:
+          schema: {$ref: '#/components/schemas/Fehler'}
+security:
+- bearerAuth: []

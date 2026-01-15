@@ -48,6 +48,14 @@ public class Image implements Serializable {
   @Temporal(TemporalType.DATE)
   private Date dateDeleted;
 
+  @Column(name = "GES_DATE_CREATED")
+  @Temporal(TemporalType.DATE)
+  private Date dateCreatedGes;
+
+  @Column(name = "GES_DATE_DELETED")
+  @Temporal(TemporalType.DATE)
+  private Date dateDeletedGes;
+
   public Image() {
   }
 
@@ -81,6 +89,22 @@ public class Image implements Serializable {
 
   public void setDateDeleted(Date dateDeleted) {
     this.dateDeleted = dateDeleted;
+  }
+
+  public Date getDateCreatedGes() {
+    return dateCreatedGes;
+  }
+
+  public void setDateCreatedGes(Date dateCreatedGes) {
+    this.dateCreatedGes = dateCreatedGes;
+  }
+
+  public Date getDateDeletedGes() {
+    return dateDeletedGes;
+  }
+
+  public void setDateDeletedGes(Date dateDeletedGes) {
+    this.dateDeletedGes = dateDeletedGes;
   }
 
   @Override

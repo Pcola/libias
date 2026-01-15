@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { BAMFaceSharedModule } from './shared/bamface.shared.module';
 import { HeaderComponent } from './shared/header/header.component';
 import { ToolbarComponent } from './shared/toolbar/toolbar.component';
-import { IncidentListComponent, IncidentItemComponent, AussenstellerListComponent, AussenstellerDetailComponent, IssueDetailComponent, StatisticsComponent, ComparerComponent, SearcherComponent }
+import { IncidentListComponent, IncidentItemComponent, AussenstellerListComponent, AussenstellerDetailComponent, IssueDetailComponent, StatisticsComponent, ComparerComponent, SearcherComponent, TrafficLightComponent, SearchListComponent }
   from './incident/index';
 import { UserListComponent, ChangePasswordComponent } from './user/index';
 import { LoginComponent } from './login/login.component';
@@ -31,7 +31,7 @@ const PRIMENG_MODULES = [PRIMENG_INPUT, PRIMENG_BUTTON, PRIMENG_DATA, PRIMENG_PA
 
 const LOGIN_COMPONENT = [LoginComponent];
 const INCIDENT_COMPONENTS = [IncidentListComponent, IncidentItemComponent, AussenstellerListComponent, AussenstellerDetailComponent, IssueDetailComponent, StatisticsComponent, ComparerComponent,
-  SearcherComponent];
+  SearcherComponent, TrafficLightComponent,SearchListComponent];
 const USER_COMPONENTS = [UserListComponent, ChangePasswordComponent];
 const IMPORT_COMPONENT = [DataImportComponent];
 const SHARED_COMPONENTS = [HeaderComponent, ToolbarComponent];
@@ -39,7 +39,7 @@ const BAMFACE_COMPONENTS = [INCIDENT_COMPONENTS, USER_COMPONENTS, LOGIN_COMPONEN
 
 @NgModule({
   imports: [CommonModule, BAMFaceSharedModule, PRIMENG_MODULES],
-  declarations: [CircleComponent, InputTrimDirective, BAMFACE_COMPONENTS],
-  exports: [BAMFACE_COMPONENTS]
+  declarations: [CircleComponent, InputTrimDirective, ...BAMFACE_COMPONENTS],
+  exports: [...BAMFACE_COMPONENTS]
 })
 export class BAMFaceModule { }

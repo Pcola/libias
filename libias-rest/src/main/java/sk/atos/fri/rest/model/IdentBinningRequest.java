@@ -6,6 +6,7 @@ public class IdentBinningRequest {
 
   @NotNull
   private byte[] img;
+  private Long requestId;
   private ImageType imgType;
   private int maxMatches;
   private int minScore;
@@ -42,4 +43,11 @@ public class IdentBinningRequest {
     this.minScore = minScore;
   }
 
+  public Long getRequestId() {
+    return requestId;
+  }
+
+  public void setRequestId(Long requestId) {
+    this.requestId = requestId;
+  }
 }

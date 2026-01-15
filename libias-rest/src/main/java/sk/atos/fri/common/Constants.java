@@ -55,24 +55,29 @@ public abstract class Constants {
     put("Akte", 10);
   }});
 
-  public static enum JobStatus {
-    None,
-    RunningMaris2Libias,
-    RunningLibias2Cognitec,
-    RunningDeleted2Libias,
-    DeleteCasesFromCognitec,
-    RunningDeleted2Cognitec,
-    RunningCognitec2Libias,
-    RunningDbEnrollment,
-    RunningFilterBeforeDataFetch,
-    RunningFilterAfterDataFetch,
-    RunningResetFilterAfterFetch,
-    RunningUpdateLockedFiles,
-    RunningUpdateDeletedFiles,
-    RunningUpdateDeletedPersons,
-    RunningUpdateIncidentApplicantData,
-    RunningFetchNewIncidentApplicantData,
-    Finished
-  };
+    public static enum JobStatus {
+        None,
+        RunningMaris2Libias,
+        RunningLibias2Cognitec,
+        RunningDeleted2Libias,
+        DeleteCasesFromCognitec,
+        DeleteCasesFromGes,
+        EnrollCasesToGes,
+        SearchWithEmbeddingForGes,
+        RunningDeleted2Cognitec,
+        RunningCognitec2Libias,
+        RunningDbEnrollment,
+        RunningFilterBeforeDataFetch,
+        RunningFilterAfterDataFetch,
+        RunningResetFilterAfterFetch,
+        RunningUpdateLockedFiles,
+        RunningUpdateDeletedFiles,
+        RunningUpdateDeletedPersons,
+        RunningUpdateIncidentApplicantData,
+        RunningFetchNewIncidentApplicantData,
+        Finished
+    }
+
+    ;
 
 }

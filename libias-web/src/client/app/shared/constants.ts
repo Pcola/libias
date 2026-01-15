@@ -63,7 +63,7 @@ export const STORAGE_AUSSENSTELLER_SORT = 'BAM.AUSSENSTELLER.SORT';
 export const BACKEND_API_AUTHENTICATE_PATH: string = '/login';
 
 export const ROLE_USER = 'USER';
-export const ROLE_SUPEUSER = 'SUPERUSER';
+export const ROLE_SUPERUSER = 'SUPERUSER';
 export const ROLE_ADMIN = 'ADMIN';
 export const ROLE_AUSSENSTELLEUSER = 'AUSSENSTELLEUSER';
 export const ROLE_COMPARER = 'COMPARER';

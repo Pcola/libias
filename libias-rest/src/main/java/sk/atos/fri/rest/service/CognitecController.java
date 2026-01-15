@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import sk.atos.fri.dao.cognitec.model.CognitecImages;
 import sk.atos.fri.dao.cognitec.service.CognitecImagesService;
+import sk.atos.fri.dao.libias.service.IdentificationBinningService;
 import sk.atos.fri.log.Error;
 import sk.atos.fri.log.Logger;
 import sk.atos.fri.rest.model.AnalyzePortraitRequest;
@@ -30,6 +31,9 @@ public class CognitecController {
 
   @Autowired
   private ICognitecWSClient cognitecWSClient;
+
+  @Autowired
+  private IdentificationBinningService identificationBinningService;
 
   /**
    *
@@ -107,20 +111,18 @@ public class CognitecController {
    * @return IdentBinningResponse - contains related images (Matches) with score and photo
    */
   @RequestMapping(path = "/identBinning",
-                  method = RequestMethod.POST,
-                  produces = MediaType.APPLICATION_JSON_VALUE)
-  public IdentBinningResponse identificationBinning(@RequestBody IdentBinningRequest request, HttpServletRequest httpServletRequest) {
+          method = RequestMethod.POST,
+          produces = MediaType.APPLICATION_JSON_VALUE)
+  public IdentBinningResponse identificationBinning(@RequestBody IdentBinningRequest request,
+                                                    HttpServletRequest httpServletRequest) {
     String username = httpServletRequest.getUserPrincipal().getName();
-    int maxMatches = request.getMaxMatches() * 3;
-    int minScore = request.getMinScore();
-
-    IdentBinningResponse response = new IdentBinningResponse();
-    response.setImgType(request.getImgType());
-
     try {
-      LOG.info(username, "Starting identification, maxMatches = " + maxMatches + ", minScore = " + minScore);
-      response.setVal(cognitecWSClient.identificationBinning(request.getImg(), username, maxMatches, minScore).getVal());
-      return response;
+        LOG.info(username,
+                "Starting identification, maxMatches=" + request.getMaxMatches()
+                        + ", minScore=" + request.getMinScore()
+                        + ", requestId=" + request.getRequestId());
+
+        return identificationBinningService.process(request, username);
     } catch (Exception e) {
       LOG.error(username, Error.GET_COGNITEC_IMAGE, e);
       throw e;

@@ -6,3 +6,5 @@ export * from './issue-detail.component';
 export * from './statistics.component';
 export * from './comparer.component';
 export * from './searcher.component';
+export * from './traffic-light.component';
+export * from './search-list.component';

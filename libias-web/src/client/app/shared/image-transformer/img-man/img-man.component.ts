@@ -116,8 +116,13 @@ export class ImgManComponent extends BaseTransformerComponent implements AfterVi
     this.tableVisible = this.inSearchTab;
 
     if (this.inSearchTab) {
-      this.enableDrop = (this.id === 1) ? true : false;
-      this.id === 1 ? this.title = this.translate.instant('label.SearchImageTitle') : this.title = this.translate.instant('label.ResultImageTitle');
+      if (this.id === 1) {
+        this.title = 'label.ResultImageTitle';
+        this.enableDrop = false;
+      } else if (this.id === 2) {
+        this.title = 'label.SearchImageTitle';
+        this.enableDrop = true;
+      }
     } else {
       this.enableDrop = true;
       this.title = 'Bild ' + this.id;
@@ -274,6 +279,10 @@ export class ImgManComponent extends BaseTransformerComponent implements AfterVi
     this.tableVisible = true;
     this.tableData = data;
     this.cd.detectChanges();
+  }
+
+  getTableData() {
+    return this.tableData;
   }
 
   onImageDrop(evt: { preventDefault: () => void; dataTransfer: { files: any[]; }; }) {
@@ -637,9 +646,7 @@ export class ImgManComponent extends BaseTransformerComponent implements AfterVi
     
     this.boundingBoxClickPosition.x = evt.clientX - this.rect.left;
     this.boundingBoxClickPosition.y = evt.clientY - this.rect.top;
-    
-    console.log('Canvas click position:', this.boundingBoxClickPosition);
-    
+        
     this.handleBoundingBoxClick();
     return;
   }
@@ -661,10 +668,7 @@ private handleBoundingBoxClick() {
   
   const clickX = this.imgCoordinates.x + (offsetX / this.scale);
   const clickY = this.imgCoordinates.y + (offsetY / this.scale);
-  
-  console.log('Canvas click:', {x: canvasX, y: canvasY});
-  console.log('Image click coords:', {x: clickX, y: clickY});
-  
+    
   this.helpContext.fillStyle = 'rgba(255, 0, 0, 0.8)';
   this.helpContext.beginPath();
   this.helpContext.arc(canvasX, canvasY, 8, 0, 2 * Math.PI);
@@ -673,9 +677,7 @@ private handleBoundingBoxClick() {
   if (this.boundingBoxMode === 1) {
     this.boundingBoxFirstCorner.x = clickX;
     this.boundingBoxFirstCorner.y = clickY;
-    
-    console.log('1. bod:', this.boundingBoxFirstCorner);
-    
+        
     this.boundingBoxMode = 2;
     this.helpCanvas.style.cursor = 'crosshair';
   } else if (this.boundingBoxMode === 2) {
@@ -695,9 +697,7 @@ private handleBoundingBoxClick() {
     this.computeBoundingBox();
     
     this.boundingBoxMode = 0;
-    this.helpCanvas.style.cursor = 'pointer';
-    console.log('✅ Box hotovo!');
-    
+    this.helpCanvas.style.cursor = 'pointer';    
     this.reDraw(0, 0, 0, 0);
   }
 }
@@ -835,109 +835,51 @@ private handleBoundingBoxClick() {
     evt.stopPropagation();
   }
 
-  setAllLandmarksFromFaceLocation(faceLocation: any) {
-  console.log('Incoming faceLocation:', faceLocation);
-  
-  // HELPER FUNKCIA - EXTRAHOVAŤ POSITION Z JAXB ELEMENTU
-  const extractPosition = (jaxbElement: any) => {
-    if (!jaxbElement) return null;
-    // Ak je to JAXBElement (má .value), vem .value.value
-    if (jaxbElement.value) {
-      return jaxbElement.value;
-    }
-    // Inak vem priamo
-    return jaxbElement;
-  };
-  
-  // SKONTROLUJ ČI SÚ LANDMARKS NULL
-  const leftEyePos = extractPosition(faceLocation.leftEye);
-  const rightEyePos = extractPosition(faceLocation.rightEye);
-  
-  const hasLandmarks = leftEyePos && rightEyePos && leftEyePos.x !== undefined && rightEyePos.x !== undefined;
-  
-  if (!hasLandmarks && faceLocation.boundingBox) {
-    // Landmarks sú null - nastav len bounding box
-    const bbox = faceLocation.boundingBox;
-    
-    this.faceCenter.x = bbox.center.x;
-    this.faceCenter.y = bbox.center.y;
-    this.faceSize.x = bbox.width;
-    this.faceSize.y = bbox.height;
-    this.faceAlpha = bbox.alpha || 0;
-    
-    console.log('✅ Box nastavený z backendu:', {
-      center: this.faceCenter,
-      size: this.faceSize,
-      alpha: this.faceAlpha
-    });
-    
-    // RESETUJ landmarks
-    this.facialLandmarks = {
-      leftEye: { x: 0, y: 0, set: 0 },
-      rightEye: { x: 0, y: 0, set: 0 },
-      noseTip: { x: 0, y: 0, set: 0 },
-      leftMouthCorner: { x: 0, y: 0, set: 0 },
-      rightMouthCorner: { x: 0, y: 0, set: 0 }
-    };
-    
-    this.computeBoundingBox();
-    this.helpLines = true;
-    this.reDraw(0, 0, 0, 0);
-    this.changeHelpLinesVisibility(false);
+setAllLandmarksFromFaceLocation(landmarks: any) {  
+  if (!landmarks) {
     return;
   }
   
-  // AK MÁŠ LANDMARKS, NASTAV ICH
-  if (leftEyePos && leftEyePos.x !== undefined) {
+  if (landmarks.leftEye && landmarks.leftEye.x !== undefined) {
     this.facialLandmarks.leftEye = { 
-      x: leftEyePos.x, 
-      y: leftEyePos.y, 
+      x: landmarks.leftEye.x, 
+      y: landmarks.leftEye.y, 
       set: 1 
     };
-    console.log('✅ LeftEye set:', this.facialLandmarks.leftEye);
   }
   
-  if (rightEyePos && rightEyePos.x !== undefined) {
+  if (landmarks.rightEye && landmarks.rightEye.x !== undefined) {
     this.facialLandmarks.rightEye = { 
-      x: rightEyePos.x, 
-      y: rightEyePos.y, 
+      x: landmarks.rightEye.x, 
+      y: landmarks.rightEye.y, 
       set: 1 
     };
-    console.log('✅ RightEye set:', this.facialLandmarks.rightEye);
   }
   
-  const noseTipPos = extractPosition(faceLocation.noseTip);
-  if (noseTipPos && noseTipPos.x !== undefined) {
+  if (landmarks.noseTip && landmarks.noseTip.x !== undefined) {
     this.facialLandmarks.noseTip = { 
-      x: noseTipPos.x, 
-      y: noseTipPos.y, 
+      x: landmarks.noseTip.x, 
+      y: landmarks.noseTip.y, 
       set: 1 
     };
-    console.log('✅ NoseTip set:', this.facialLandmarks.noseTip);
   }
   
-  const leftMouthPos = extractPosition(faceLocation.leftMouthCorner);
-  if (leftMouthPos && leftMouthPos.x !== undefined) {
+  if (landmarks.leftMouthCorner && landmarks.leftMouthCorner.x !== undefined) {
     this.facialLandmarks.leftMouthCorner = { 
-      x: leftMouthPos.x, 
-      y: leftMouthPos.y, 
+      x: landmarks.leftMouthCorner.x, 
+      y: landmarks.leftMouthCorner.y, 
       set: 1 
     };
-    console.log('✅ LeftMouth set:', this.facialLandmarks.leftMouthCorner);
   }
   
-  const rightMouthPos = extractPosition(faceLocation.rightMouthCorner);
-  if (rightMouthPos && rightMouthPos.x !== undefined) {
+  if (landmarks.rightMouthCorner && landmarks.rightMouthCorner.x !== undefined) {
     this.facialLandmarks.rightMouthCorner = { 
-      x: rightMouthPos.x, 
-      y: rightMouthPos.y, 
+      x: landmarks.rightMouthCorner.x, 
+      y: landmarks.rightMouthCorner.y, 
       set: 1 
     };
-    console.log('✅ RightMouth set:', this.facialLandmarks.rightMouthCorner);
   }
-  
-  console.log('✅ All landmarks after set:', this.facialLandmarks);
-  
+    
   this.helpLines = true;
   this.reDraw(0, 0, 0, 0);
   this.changeHelpLinesVisibility(false);
@@ -947,11 +889,9 @@ private handleBoundingBoxClick() {
     if (this.boundingBoxMode === 0) {
       this.boundingBoxMode = 1;
       this.helpCanvas.style.cursor = 'crosshair';
-      console.log('Bounding Box Mode: Klikni na 1. bod');
     } else {
       this.boundingBoxMode = 0;
       this.helpCanvas.style.cursor = 'pointer';
-      console.log('Bounding Box Mode: Zrušené');
     }
   }
 }

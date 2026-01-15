@@ -14,7 +14,7 @@ import {
   ROLE_AUSSENSTELLEUSER,
   ROLE_COMPARER,
   ROLE_SEARCHER,
-  ROLE_SUPEUSER,
+  ROLE_SUPERUSER,
   ROLE_USER,
   STATUS_ID_ADJUSTED,
   STATUS_ID_AUTO_ADJUSTED,
@@ -88,13 +88,13 @@ export class IncidentListComponent implements OnInit {
 
     if (!this.loginService.isAuthenticated()) {
       this.loginService.logout(true);
-    } else if (this.loginService.isAuthorized([ROLE_AUSSENSTELLEUSER]) && !this.loginService.isAuthorized([ROLE_ADMIN, ROLE_USER, ROLE_SUPEUSER])) {
+    } else if (this.loginService.isAuthorized([ROLE_AUSSENSTELLEUSER]) && !this.loginService.isAuthorized([ROLE_ADMIN, ROLE_USER, ROLE_SUPERUSER])) {
       this.router.navigate(['/aussensteller-list']);
-    } else if (this.loginService.isAuthorized([ROLE_COMPARER]) && !this.loginService.isAuthorized([ROLE_ADMIN, ROLE_USER, ROLE_SUPEUSER])) {
+    } else if (this.loginService.isAuthorized([ROLE_COMPARER]) && !this.loginService.isAuthorized([ROLE_ADMIN, ROLE_USER, ROLE_SUPERUSER])) {
       this.router.navigate(['/comparer']);
-    } else if (this.loginService.isAuthorized([ROLE_SEARCHER]) && !this.loginService.isAuthorized([ROLE_ADMIN, ROLE_USER, ROLE_SUPEUSER])) {
+    } else if (this.loginService.isAuthorized([ROLE_SEARCHER]) && !this.loginService.isAuthorized([ROLE_ADMIN, ROLE_USER, ROLE_SUPERUSER])) {
       this.router.navigate(['/searcher']);
-    } else if (!this.loginService.isAuthorized([ROLE_ADMIN, ROLE_USER, ROLE_SUPEUSER])) {
+    } else if (!this.loginService.isAuthorized([ROLE_ADMIN, ROLE_USER, ROLE_SUPERUSER])) {
       this.loginService.logout(true);
     } else {
       this.busy = true;
@@ -313,7 +313,7 @@ export class IncidentListComponent implements OnInit {
       this.translate.get('label.Status.6').subscribe(v => this.statuses.push({ label: v, value: STATUS_ID_FILES_NO_LINK }));
       this.translate.get('label.Status.7').subscribe(v => this.statuses.push({ label: v, value: STATUS_ID_ADJUSTED }));
       this.translate.get('label.Status.9').subscribe(v => this.statuses.push({ label: v, value: STATUS_ID_DNUMBER_DIFF }));
-      if (this.loginService.isAuthorized([ROLE_SUPEUSER])) {
+      if (this.loginService.isAuthorized([ROLE_SUPERUSER])) {
         this.translate.get('label.Status.8').subscribe(v => this.statuses.push({ label: v, value: STATUS_ID_READY_TO_QA }));
       }
       this.translate.get('label.Status.10').subscribe(v => this.statuses.push({ label: v, value: STATUS_ID_AUTO_ADJUSTED }));

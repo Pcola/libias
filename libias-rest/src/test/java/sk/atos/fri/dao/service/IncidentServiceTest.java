@@ -5,11 +5,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import sk.atos.fri.dao.libias.model.IncidentFilter;
-import sk.atos.fri.dao.libias.service.IncidentService;
+import sk.atos.fri.dao.libias.service.IIncidentService;
 import sk.atos.fri.rest.model.IncidentSearchRequest;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
+import javax.servlet.AsyncContext;
+import javax.servlet.DispatcherType;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpUpgradeHandler;
+import javax.servlet.http.Part;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -29,7 +41,7 @@ public class IncidentServiceTest extends AbstractDaoTest {
     public static final Long VALID_CASE_ID = 5L;
 
     @Autowired
-    private IncidentService incidentService;
+    private IIncidentService incidentService;
 
     @Test
     @Transactional

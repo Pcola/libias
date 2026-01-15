@@ -1,0 +1,158 @@
+<div class="container normal-text">
+  <div class="inner-container">
+
+    <h1 class="page-title">{{'label.SearchRequests' | translate}}</h1>
+
+    <div class="div_spinner" *ngIf="busy">
+      <sk-circle></sk-circle>
+    </div>
+
+    <p-growl [value]="msgs" [life]="growlLife"></p-growl>
+
+    <div>
+      <p-panel header="Filter" [toggleable]="true">
+        <div class="ui-g">
+          <div class="ui-g-4 no-top-bottom-padding">
+            <div class="ui-g-5 top-padding-2" style="text-align: right;"><label for="input_requestId">{{'label.Vorgangsnummer' | translate}}:</label></div>
+            <div class="ui-g-6 top-padding-2"><input id="input_requestId" type="text" pInputText class="input_search" [(ngModel)]="filter.requestId" (keyup.enter)="actionSearch()" /></div>
+          </div>
+          <div class="ui-g-4 no-top-bottom-padding">
+            <div class="ui-g-5 top-padding-2" style="text-align: right;"><label for="input_dateFrom">{{'label.DatumVon' | translate}}:</label></div>
+            <div class="ui-g-6 top-padding-2">
+              <p-calendar inputId="input_dateFrom" [(ngModel)]="filter.dateFrom" dateFormat="dd.mm.yy" [showIcon]="true" (keyup.enter)="actionSearch()"></p-calendar>
+            </div>
+          </div>
+          <div class="ui-g-4 no-top-bottom-padding">
+            <div class="ui-g-5 top-padding-2" style="text-align: right;"><label for="input_dateTo">{{'label.DatumBis' | translate}}:</label></div>
+            <div class="ui-g-6 top-padding-2">
+              <p-calendar inputId="input_dateTo" [(ngModel)]="filter.dateTo" dateFormat="dd.mm.yy" [showIcon]="true" (keyup.enter)="actionSearch()"></p-calendar>
+            </div>
+          </div>
+        </div>
+        <div class="ui-g">
+          <div class="ui-g-4 no-top-bottom-padding">
+            <div class="ui-g-5 top-padding-2" style="text-align: right;"><label for="input_sachbearbeiter">{{'label.Sachbearbeiter' | translate}}:</label></div>
+            <div class="ui-g-6 top-padding-2"><input id="input_sachbearbeiter" type="text" pInputText class="input_search" [(ngModel)]="filter.username" (keyup.enter)="actionSearch()" /></div>
+          </div>
+          <div class="ui-g-4 no-top-bottom-padding">
+            <div class="ui-g-5 top-padding-2" style="text-align: right;"><label for="input_abteilung">{{'label.Abteilung' | translate}}:</label></div>
+            <div class="ui-g-6 top-padding-2" style="text-align: left;">
+              <p-dropdown inputId="input_abteilung" [options]="workplaceItems" [autoWidth]="false" [style]="{'width':'220px'}" [(ngModel)]="selectedWorkplaceId" (onChange)="changedWorkplaceId($event)"></p-dropdown>
+            </div>
+          </div>
+          <div class="ui-g-4 no-top-bottom-padding">
+          </div>
+        </div>
+        <div class="ui-g">
+          <div class="ui-g-4 no-top-bottom-padding">
+          </div>
+          <div class="ui-g-4 no-top-bottom-padding">
+          </div>
+          <div class="ui-g-4 no-top-bottom-padding">
+            <div class="ui-g-12" style="text-align: right;">
+              <button pButton class="ui-button" type="button" icon="fa-search" iconPos="left" label="{{'label.Search' | translate}}" title="{{'label.Search' | translate}}" (click)="actionSearch()"></button>
+              <button pButton style="margin-right: 80px;" type="button" icon="fa-undo" iconPos="left" label="{{'label.Clear' | translate}}" title="{{'label.Clear' | translate}}" (click)="clear()"></button>
+            </div>
+          </div>
+        </div>
+      </p-panel>
+    </div>
+
+    <div style="margin-top: 20px">
+      <p-dataTable #dt [value]="searchRequests" selectionMode="single" [style]="{'padding-bottom':'85px'}" [(selection)]="selectedSearchRequest" [rows]="defaultRows" [paginator]="true" [pageLinks]="5" [rowsPerPageOptions]="[10,20,30,50]" [lazy]="true" [totalRecords]="totalSearchRequestsCount" resizableColumns="true" rowHover="true" (onLazyLoad)="onLazyPage($event)" (onRowSelect)="onRowSelect($event)">
+        <p-header>{{"label.ListOfSearchRequests" | translate}}</p-header>
+        <p-footer>{{"label.TotalRecords" | translate}}{{totalSearchRequestsCount}}</p-footer>
+        
+        <p-column field="requestId" [sortable]="true" [style]="{'width': '120px'}">
+          <ng-template pTemplate="header">
+            {{'label.Vorgangsnummer' | translate}}
+          </ng-template>
+        </p-column>
+
+        <p-column field="dateCreated" [sortable]="true" [style]="{'width': '140px'}">
+          <ng-template pTemplate="header">
+            {{'label.Durchführungsdatum' | translate}}
+          </ng-template>
+          <ng-template let-col let-dateCreated="rowData" pTemplate="body">
+            {{dateCreated[col.field] | date : 'dd.MM.yyyy'}}
+          </ng-template>
+        </p-column>
+
+        <p-column field="createdBy" [sortable]="true" [style]="{'width': '130px'}">
+          <ng-template pTemplate="header">
+            {{'label.Sachbearbeiter' | translate}}
+          </ng-template>
+        </p-column>
+
+        <p-column field="dateModified" [sortable]="true" [style]="{'width': '140px'}">
+          <ng-template pTemplate="header">
+            {{'label.Änderungsdatum' | translate}}
+          </ng-template>
+          <ng-template let-col let-dateModified="rowData" pTemplate="body">
+            {{dateModified[col.field] | date : 'dd.MM.yyyy'}}
+          </ng-template>
+        </p-column>
+
+        <p-column field="modifiedBy" [sortable]="true" [style]="{'width': '130px'}">
+          <ng-template pTemplate="header">
+            {{'label.GeändertVon' | translate}}
+          </ng-template>
+        </p-column>
+
+        <p-column field="dienststelleId" [sortable]="true" [style]="{'width': '120px'}">
+          <ng-template pTemplate="header">
+            {{'label.Abteilung' | translate}}
+          </ng-template>
+          <ng-template let-col let-dienststelleId="rowData" pTemplate="body">
+            {{getWorkplaceName(dienststelleId[col.field])}}
+          </ng-template>
+        </p-column>
+
+        <p-column field="maxCandidates" [sortable]="true" [style]="{'width': '120px'}">
+          <ng-template pTemplate="header">
+            {{'label.MaxKandidaten' | translate}}
+          </ng-template>
+        </p-column>
+
+        <p-column field="minScore" [sortable]="true" [style]="{'width': '100px'}">
+          <ng-template pTemplate="header">
+            {{'label.MinScore' | translate}}
+          </ng-template>
+        </p-column>
+
+        <p-column field="minAge" [sortable]="true" [style]="{'width': '100px'}">
+          <ng-template pTemplate="header">
+            {{'label.MinAlter' | translate}}
+          </ng-template>
+        </p-column>
+
+        <p-column field="geschlecht" [sortable]="true" [style]="{'width': '100px'}">
+          <ng-template pTemplate="header">
+            {{'label.Geschlecht' | translate}}
+          </ng-template>
+        </p-column>
+
+        <p-column field="staatsangehoerigkeit" [sortable]="true" [style]="{'width': '140px'}">
+          <ng-template pTemplate="header">
+            {{'label.Staatsangehörigkeit' | translate}}
+          </ng-template>
+        </p-column>
+
+        <p-column field="highestScore" [sortable]="true" [style]="{'width': '120px'}">
+          <ng-template pTemplate="header">
+            {{'label.HöchsterScore' | translate}}
+          </ng-template>
+        </p-column>
+
+        <p-column styleClass="text-center" field="requestId" [style]="{'width': '80px'}">
+          <ng-template pTemplate="header">
+            {{'label.Action' | translate}}
+          </ng-template>
+          <ng-template let-col let-requestId="rowData" pTemplate="body">
+            <button pButton type="button" title="{{'label.OpenSearcher' | translate}}" icon="fa-pencil" (focus)="changeStyleOfRow(requestId[col.field])" (click)="navigateToSearcher(requestId[col.field])"></button>
+          </ng-template>
+        </p-column>
+      </p-dataTable>
+    </div>
+  </div>
+</div>

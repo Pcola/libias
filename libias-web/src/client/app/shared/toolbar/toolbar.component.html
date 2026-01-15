@@ -15,6 +15,11 @@
       <a routerLink="/searcher" class="navigationbar-text" style="float: left; margin-left: 20px;" *ngIf="hasRole(['SEARCHER', 'ADMIN'])">
         <i class="fa fa-user-circle" aria-hidden="true"></i>&nbsp;{{'label.Searcher' | translate}}
       </a>
+
+      <a routerLink="/search-list" class="navigationbar-text" style="float: left; margin-left: 20px;" *ngIf="hasRole(['SEARCHER', 'ADMIN'])">
+        <i class="fa fa-user-circle" aria-hidden="true"></i>&nbsp;{{'label.SearchRequests' | translate}}
+      </a>
+
       <a routerLink="/user-list" class="navigationbar-text" style="float: left; margin-left: 20px;" *ngIf="hasRole(['LOCAL_USER_MGMT']) && hasRole(['ADMIN'])">
         <i class="fa fa-users" aria-hidden="true"></i>&nbsp;{{'label.UserManagement' | translate}}
       </a>
@@ -31,6 +36,9 @@
       -->
       <a routerLink="/statistics" class="navigationbar-text" style="float: left; margin-left: 20px;" *ngIf="hasRole(['SUPERUSER', 'ADMIN'])">
         <i class="fa fa-line-chart" aria-hidden="true"></i>&nbsp;{{'label.Statistics' | translate}}
+      </a>
+      <a routerLink="/traffic-light" class="navigationbar-text" style="float: left; margin-left: 20px;" *ngIf="hasRole(['SUPERUSER', 'ADMIN'])">
+        <i class="fa fa-traffic-light" aria-hidden="true"></i>&nbsp;{{'label.TrafficLight' | translate}}
       </a>
       <a routerLink="/about" class="navigationbar-text" style="float: left; margin-left: 20px;">
         <i class="fa fa-info" aria-hidden="true"></i>&nbsp;{{'label.About' | translate}}

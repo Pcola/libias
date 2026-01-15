@@ -5,8 +5,8 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import sk.atos.fri.dao.libias.model.Incident;
-import sk.atos.fri.dao.libias.service.IncidentService;
+import sk.atos.fri.dao.libias.domain.Incident;
+import sk.atos.fri.dao.libias.service.IIncidentService;
 import sk.atos.fri.dao.service.AbstractDaoTest;
 
 import java.io.File;
@@ -21,7 +21,7 @@ public class IncidentReportTest extends AbstractDaoTest {
     private IncidentReport incidentReport;
 
     @Autowired
-    private IncidentService incidentService;
+    private IIncidentService incidentService;
 
     @Test
     public void createReport() throws DocumentException, IOException {

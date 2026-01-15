@@ -13,7 +13,7 @@ import {
   GROWL_SEVERITY_INFO,
   GROWL_SEVERITY_WARN,
   ROLE_ADMIN,
-  ROLE_SUPEUSER,
+  ROLE_SUPERUSER,
   ROLE_USER,
   STATUS_ID_ADJUSTED,
   STATUS_ID_AUTO_ADJUSTED,
@@ -86,7 +86,7 @@ export class IncidentItemComponent implements OnInit {
     this.setDisablePriorityUpdate();
     this.fillWorkplace();
 
-    if (!this.loginService.isAuthenticated() || !this.loginService.isAuthorized([ROLE_ADMIN, ROLE_USER, ROLE_SUPEUSER])) {
+    if (!this.loginService.isAuthenticated() || !this.loginService.isAuthorized([ROLE_ADMIN, ROLE_USER, ROLE_SUPERUSER])) {
       this.loginService.logout(true);
     } else {
       this.route.params.forEach((params: Params) => {
@@ -377,7 +377,7 @@ export class IncidentItemComponent implements OnInit {
     this.statusItems = [];
     let statusIds = [STATUS_ID_OPEN, STATUS_ID_NOT_CLEAR, STATUS_ID_NO_PROCESSING, STATUS_ID_FILES_DOUBLET,
       STATUS_ID_FILES_NO_DOUBLET, STATUS_ID_FILES_NO_LINK, STATUS_ID_ADJUSTED, STATUS_ID_DNUMBER_DIFF];
-    if (this.loginService.isAuthorized([ROLE_SUPEUSER])) {
+    if (this.loginService.isAuthorized([ROLE_SUPERUSER])) {
       statusIds.push(STATUS_ID_READY_TO_QA);
     }
     for (let s of statusIds) {
@@ -438,6 +438,6 @@ export class IncidentItemComponent implements OnInit {
   }
 
   private setDisablePriorityUpdate() {
-    this.disablePriorityChange = !(this.loginService.isAuthorized([ROLE_ADMIN]) || this.loginService.isAuthorized([ROLE_SUPEUSER]) || this.loginService.isAuthorized([ROLE_USER]));
+    this.disablePriorityChange = !(this.loginService.isAuthorized([ROLE_ADMIN]) || this.loginService.isAuthorized([ROLE_SUPERUSER]) || this.loginService.isAuthorized([ROLE_USER]));
   }
 }

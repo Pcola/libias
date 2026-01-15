@@ -1,21 +1,21 @@
 import { Slider } from './slider';
 
 export class Sliders {
-  r: any;
-  cnv: any = null;
+  r: number;
+  cnv: HTMLCanvasElement = null;
   x: number = 0;
   y: number = 0;
   lastX: number = 0;
   lastY: number = 0;
   mouseDownVar: boolean = false;
-  TL: any = null;
-  BL: any = null;
-  TR: any = null;
-  BR: any = null;
+  TL: { x: number, y: number } = null;
+  BL: { x: number, y: number } = null;
+  TR: { x: number, y: number } = null;
+  BR: { x: number, y: number } = null;
 
   slider: Slider[] = [];
 
-  constructor(r: any) {
+  constructor(r: number) {
     this.r = r;
   }
 
@@ -23,7 +23,7 @@ export class Sliders {
     this.slider.push(new Slider(x, y));
   }
 
-  setCnv(_cnv: any): void {
+  setCnv(_cnv: HTMLCanvasElement): void {
     this.cnv = _cnv;
   }
 
@@ -55,8 +55,7 @@ export class Sliders {
   }
 
   selected(): number {
-    let i: number;
-    for (i = 0; i < this.slider.length; i++) {
+    for (let i = 0; i < this.slider.length; i++) {
       if (this.slider[i].selected !== 0) {
         return 1;
       }
@@ -65,10 +64,8 @@ export class Sliders {
   }
 
   check(): void {
-    let sel: number;
-    let i: number;
-    for (i = 0; i < this.slider.length; i++) {
-      sel = this.selected();
+    for (let i = 0; i < this.slider.length; i++) {
+      const sel = this.selected();
       if (sel === 0) {
         if (this.slider[i].isIn(this.x, this.y)) {
           this.slider[i].selected = 1;
@@ -82,14 +79,16 @@ export class Sliders {
         this.slider[i].y = Math.ceil(this.slider[i].y);
 
         if (this.slider[i].x === this.r || this.slider[i].x === this.cnv.width - this.r) {
-          this.slider[i].y += ((this.slider[i].y + this.y - this.lastY) >= this.r) && 
-                             ((this.slider[i].y + this.y - this.lastY) <= this.cnv.height - this.r) ? 
-                             this.y - this.lastY : 0;
+          const newY = this.slider[i].y + this.y - this.lastY;
+          if (newY >= this.r && newY <= this.cnv.height - this.r) {
+            this.slider[i].y = newY;
+          }
         }
         if (this.slider[i].y === this.r || this.slider[i].y === this.cnv.height - this.r) {
-          this.slider[i].x += ((this.slider[i].x + this.x - this.lastX) >= this.r) && 
-                             ((this.slider[i].x + this.x - this.lastX) <= this.cnv.width - this.r) ? 
-                             this.x - this.lastX : 0;
+          const newX = this.slider[i].x + this.x - this.lastX;
+          if (newX >= this.r && newX <= this.cnv.width - this.r) {
+            this.slider[i].x = newX;
+          }
         }
       }
     }
@@ -97,35 +96,39 @@ export class Sliders {
 
   where(i: number): number {
     if (this.slider[i].y === this.r) {
-      return 4;  // top
+      return 4;
     }
     if (this.slider[i].y === this.cnv.height - this.r) {
-      return 2;  // bottom
+      return 2;
     }
     if (this.slider[i].x === this.r) {
-      return 3;  // left
+      return 3;
     }
     if (this.slider[i].x === this.cnv.width - this.r) {
-      return 1;  // right
+      return 1;
     }
     return 0;
   }
 
-  getPoly(): any[] {
-    const poly: any[] = [];
+  getPoly(): Array<{ x: number, y: number }> {
+    const poly: Array<{ x: number, y: number }> = [];
+
     this.TL = { x: this.r, y: this.r };
     this.BL = { x: this.r, y: this.cnv.height - this.r };
     this.TR = { x: this.cnv.width - this.r, y: this.r };
     this.BR = { x: this.cnv.width - this.r, y: this.cnv.height - this.r };
 
-    if (this.where(0) === 2 && this.where(1) === 4) {
+    const w0 = this.where(0);
+    const w1 = this.where(1);
+
+    if (w0 === 2 && w1 === 4) {
       poly.push(this.slider[0]);
       poly.push(this.slider[1]);
       poly.push(this.TR);
       poly.push(this.BR);
       return poly;
     }
-    if (this.where(0) === 4 && this.where(1) === 2) {
+    if (w0 === 4 && w1 === 2) {
       poly.push(this.slider[1]);
       poly.push(this.slider[0]);
       poly.push(this.TR);
@@ -133,52 +136,52 @@ export class Sliders {
       return poly;
     }
 
-    if (this.where(0) === 3 && this.where(1) === 1) {
+    if (w0 === 3 && w1 === 1) {
       poly.push(this.slider[0]);
       poly.push(this.slider[1]);
       poly.push(this.BR);
       poly.push(this.BL);
       return poly;
     }
-    if (this.where(0) === 1 && this.where(1) === 3) {
+    if (w0 === 1 && w1 === 3) {
       poly.push(this.slider[1]);
       poly.push(this.slider[0]);
-      poly.push(this.BR);
-      poly.push(this.BL);
-      return poly;
-    }
-
-    if (this.where(0) === 1 && this.where(1) === 4) {
-      poly.push(this.slider[0]);
-      poly.push(this.slider[1]);
-      poly.push(this.TR);
-      return poly;
-    }
-    if (this.where(0) === 4 && this.where(1) === 1) {
-      poly.push(this.slider[1]);
-      poly.push(this.slider[0]);
-      poly.push(this.TR);
-      return poly;
-    }
-
-    if (this.where(0) === 3 && this.where(1) === 4) {
-      poly.push(this.slider[0]);
-      poly.push(this.slider[1]);
-      poly.push(this.TR);
-      poly.push(this.BR);
-      poly.push(this.BL);
-      return poly;
-    }
-    if (this.where(0) === 4 && this.where(1) === 3) {
-      poly.push(this.slider[1]);
-      poly.push(this.slider[0]);
-      poly.push(this.TR);
       poly.push(this.BR);
       poly.push(this.BL);
       return poly;
     }
 
-    if (this.where(0) === 3 && this.where(1) === 2) {
+    if (w0 === 1 && w1 === 4) {
+      poly.push(this.slider[0]);
+      poly.push(this.slider[1]);
+      poly.push(this.TR);
+      return poly;
+    }
+    if (w0 === 4 && w1 === 1) {
+      poly.push(this.slider[1]);
+      poly.push(this.slider[0]);
+      poly.push(this.TR);
+      return poly;
+    }
+
+    if (w0 === 3 && w1 === 4) {
+      poly.push(this.slider[0]);
+      poly.push(this.slider[1]);
+      poly.push(this.TR);
+      poly.push(this.BR);
+      poly.push(this.BL);
+      return poly;
+    }
+    if (w0 === 4 && w1 === 3) {
+      poly.push(this.slider[1]);
+      poly.push(this.slider[0]);
+      poly.push(this.TR);
+      poly.push(this.BR);
+      poly.push(this.BL);
+      return poly;
+    }
+
+    if (w0 === 3 && w1 === 2) {
       poly.push(this.slider[0]);
       poly.push(this.slider[1]);
       poly.push(this.BR);
@@ -186,7 +189,7 @@ export class Sliders {
       poly.push(this.TL);
       return poly;
     }
-    if (this.where(0) === 2 && this.where(1) === 3) {
+    if (w0 === 2 && w1 === 3) {
       poly.push(this.slider[1]);
       poly.push(this.slider[0]);
       poly.push(this.BR);
@@ -195,18 +198,19 @@ export class Sliders {
       return poly;
     }
 
-    if (this.where(0) === 1 && this.where(1) === 2) {
+    if (w0 === 1 && w1 === 2) {
       poly.push(this.slider[0]);
       poly.push(this.slider[1]);
       poly.push(this.BR);
       return poly;
     }
-    if (this.where(0) === 2 && this.where(1) === 1) {
+    if (w0 === 2 && w1 === 1) {
       poly.push(this.slider[1]);
       poly.push(this.slider[0]);
       poly.push(this.BR);
       return poly;
     }
+
     poly.push(this.TR);
     return poly;
   }

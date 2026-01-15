@@ -7,7 +7,7 @@ import { Sliders } from "./sliders";
   templateUrl: 'app/shared/image-transformer/image-comparer/image-comparer.component.html',
 })
 export class ImageComparerComponent extends BaseTransformerComponent implements AfterViewInit {
-  
+
   @Input()
   height = 0;
 
@@ -35,7 +35,6 @@ export class ImageComparerComponent extends BaseTransformerComponent implements 
   contextT: CanvasRenderingContext2D;
 
   r = 10;
-
   bw = 0;
 
   rect: ClientRect | DOMRect = null;
@@ -92,13 +91,12 @@ export class ImageComparerComponent extends BaseTransformerComponent implements 
       this.contextT.putImageData(img, 0, 0);
       this.contextLeft.clearRect(0, 0, this.leftCanvas.width, this.leftCanvas.height);
       this.contextLeft.drawImage(this.imageDrawerCanvas, 0, 0, this.leftCanvas.width, this.leftCanvas.height);
-      this.update();
     } else {
       this.contextT.putImageData(img, 0, 0);
       this.contextTmp.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
       this.contextTmp.drawImage(this.imageDrawerCanvas, 0, 0, this.tempCanvas.width, this.tempCanvas.height);
-      this.update();
     }
+    this.update();
   };
 
   mouseMove(evt: MouseEvent) {
@@ -127,41 +125,57 @@ export class ImageComparerComponent extends BaseTransformerComponent implements 
   }
 
   update() {
-    let i;
     const poly = this.sliders.getPoly();
-
     this.rect = this.slideCanvas.getBoundingClientRect();
+
     this.contextRight.clearRect(0, 0, this.rightCanvas.width, this.rightCanvas.height);
+
     this.contextRight.save();
     this.contextRight.beginPath();
     this.contextRight.moveTo(poly[0].x, poly[0].y);
-    for (i = 1; i < poly.length; i++) {
+    for (let i = 1; i < poly.length; i++) {
       this.contextRight.lineTo(poly[i].x, poly[i].y);
     }
     this.contextRight.lineTo(poly[0].x, poly[0].y);
     this.contextRight.closePath();
     this.contextRight.clip();
+
+    this.contextRight.fillStyle = '#ffffff';
     this.contextRight.fillRect(0, 0, this.rightCanvas.width, this.rightCanvas.height);
+
     this.contextRight.drawImage(this.tempCanvas, 0, 0);
     this.contextRight.restore();
 
     this.contextSlide.clearRect(0, 0, this.slideCanvas.width, this.slideCanvas.height);
+
     if (this.helpLines) {
-      this.constructLine(this.contextSlide, this.sliders.slider[0].x, this.sliders.slider[0].y, this.sliders.slider[1].x, this.sliders.slider[1].y, [10, 0], '#ff0000');
+      this.constructLine(
+        this.contextSlide,
+        this.sliders.slider[0].x,
+        this.sliders.slider[0].y,
+        this.sliders.slider[1].x,
+        this.sliders.slider[1].y,
+        [10, 0],
+        '#ff0000'
+      );
+
       this.constructLine(this.contextSlide, this.fromLeft, 0, this.fromLeft, this.height, [5, 10], '#00ff00');
       this.constructLine(this.contextSlide, this.fromLeft + this.betweenEyes, 0, this.fromLeft + this.betweenEyes, this.height, [5, 10], '#00ff00');
       this.constructLine(this.contextSlide, 0, this.fromTop, this.width, this.fromTop, [5, 10], '#00ff00');
     }
-    for (i = 0; i < this.sliders.slider.length; i++) {
+
+    for (let i = 0; i < this.sliders.slider.length; i++) {
       this.contextSlide.beginPath();
       this.contextSlide.strokeStyle = '#0000ff';
       this.contextSlide.setLineDash([10, 0]);
       this.contextSlide.arc(this.sliders.slider[i].x, this.sliders.slider[i].y, this.r, 0, 2 * Math.PI, false);
+
       if (this.sliders.slider[i].selected !== 0) {
         this.contextSlide.fillStyle = '#ffffff';
       } else {
         this.contextSlide.fillStyle = '#00bfff';
       }
+
       this.contextSlide.closePath();
       this.contextSlide.fill();
       this.contextSlide.stroke();
@@ -174,7 +188,6 @@ export class ImageComparerComponent extends BaseTransformerComponent implements 
     if (change) {
       this.helpLines = !this.helpLines;
     }
-
     this.update();
   }
 

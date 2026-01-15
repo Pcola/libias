@@ -1,4 +1,4 @@
-<label>{{title}}</label>
+<label>{{ title | translate }}</label>
 <div class="block">
   <div [style.height.px]="height"
        class="rel full-w">
@@ -41,128 +41,127 @@
   </div>
 
   <div class="rel p-mt-2">
-
-  <div class="inline-grid-expanded p-mt-2">
-    <div>
-      <div class="ui-g-2 ui-g-nopad">
-        <img [src]="'assets/images/rotate.jpg'"
-             alt=""
-             class="jsman img-btn-small"
-             title="Bild drehen (zum Zurücksetzen klicken)">
+    <div class="inline-grid-expanded p-mt-2">
+      <div>
+        <div class="ui-g-2 ui-g-nopad">
+          <img [src]="'assets/images/rotate.jpg'"
+               alt=""
+               class="jsman img-btn-small"
+               title="Bild drehen (zum Zurücksetzen klicken)">
+        </div>
+        <div class="ui-g-10 ui-g-nopad">
+          <input (input)="rotationChanged()"
+                 [(ngModel)]="rotationSliderValue"
+                 class="jsman jsman_slider"
+                 max="180"
+                 min="-180"
+                 title="Bild drehen (zum Zurücksetzen klicken)"
+                 type="range"/>
+        </div>
       </div>
-      <div class="ui-g-10 ui-g-nopad">
-        <input (input)="rotationChanged()"
-               [(ngModel)]="rotationSliderValue"
-               class="jsman jsman_slider"
-               max="180"
-               min="-180"
-               title="Bild drehen (zum Zurücksetzen klicken)"
-               type="range"/>
+      <div class="p-mt-2">
+        <div class="ui-g-2 ui-g-nopad">
+          <img [src]="'assets/images/light.jpg'"
+               alt=""
+               class="jsman img-btn-small"
+               title="Bildhelligkeit ändern (zum Zurücksetzen klicken)">
+        </div>
+        <div class="ui-g-10 ui-g-nopad">
+          <input (input)="brightnessChanged()"
+                 [(ngModel)]="brightnessSliderValue"
+                 class="jsman jsman_slider"
+                 max="100"
+                 min="-100"
+                 title="Bildhelligkeit ändern (zum Zurücksetzen klicken)"
+                 type="range"/>
+        </div>
+      </div>
+      <div class="p-mt-2">
+        <div class="ui-g-2 ui-g-nopad">
+          <img [src]="'assets/images/contrast.jpg'"
+               alt=""
+               class="jsman img-btn-small"
+               title="Bildkontrast ändern (zum Zurücksetzen klicken)">
+        </div>
+        <div class="ui-g-10 ui-g-nopad">
+          <input (input)="contrastChanged()"
+                 [(ngModel)]="contrastSliderValue"
+                 class="jsman jsman_slider"
+                 max="100"
+                 min="-100"
+                 title="Bildkontrast ändern (zum Zurücksetzen klicken)"
+                 type="range"/>
+        </div>
       </div>
     </div>
+    <div class="flex-space p-mt-2" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+      <img (click)="annotateReq()"
+           [src]="'assets/images/eye_position.png'"
+           alt=""
+           class="jsman img-btn-large"
+           title="Augenposition automatisch setzen"
+           style="cursor: pointer; width: 36px; height: 36px;">
+      <img (click)="setLeftEye()"
+           [src]="'assets/images/left_eye.png'"
+           alt=""
+           class="jsman img-btn-large"
+           title="Das linke Auge händisch markieren"
+           style="cursor: pointer; width: 36px; height: 36px;">
+      <img (click)="setRightEye()"
+           [src]="'assets/images/right_eye.png'"
+           alt=""
+           class="jsman img-btn-large"
+           title="Das rechte Auge händisch markieren"
+           style="cursor: pointer; width: 36px; height: 36px;">
+      <img (click)="setNose()"
+           [src]="'assets/images/nose.png'"
+           alt=""
+           class="jsman img-btn-large"
+           title="Die Nasenspitze händisch markieren"
+           style="cursor: pointer; width: 36px; height: 36px;">
+      <img (click)="setLeftMouthCorner()"
+           [src]="'assets/images/left_corner.png'"
+           alt=""
+           class="jsman img-btn-large"
+           title="Die linke Mundecke händisch markieren"
+           style="cursor: pointer; width: 36px; height: 36px;">
+      <img (click)="setRightMouthCorner()"
+           [src]="'assets/images/right_corner.png'"
+           alt=""
+           class="jsman img-btn-large"
+           title="Die rechte Mundecke händisch markieren"
+           style="cursor: pointer; width: 36px; height: 36px;">
+      <img (click)="setBoundingBox()"
+           [src]="'assets/images/bounding-box.png'"
+           alt=""
+           class="jsman img-btn-large"
+           title="Bounding box ručne nastaviť"
+           style="cursor: pointer; width: 36px; height: 36px;">
+      <img (click)="reDrawAnnotated()"
+           [src]="'assets/images/normalization.png'"
+           alt=""
+           class="jsman img-btn-large"
+           title="Bild normalisieren"
+           style="cursor: pointer; width: 36px; height: 36px;">
+      <img (click)="resetCanvas()"
+           [src]="'assets/images/reset.png'"
+           alt=""
+           class="jsman img-btn-large"
+           title="Bild zurücksetzen"
+           style="cursor: pointer; width: 36px; height: 36px;">
+    </div>
+
     <div class="p-mt-2">
-      <div class="ui-g-2 ui-g-nopad">
-        <img [src]="'assets/images/light.jpg'"
-             alt=""
-             class="jsman img-btn-small"
-             title="Bildhelligkeit ändern (zum Zurücksetzen klicken)">
-      </div>
-      <div class="ui-g-10 ui-g-nopad">
-        <input (input)="brightnessChanged()"
-               [(ngModel)]="brightnessSliderValue"
-               class="jsman jsman_slider"
-               max="100"
-               min="-100"
-               title="Bildhelligkeit ändern (zum Zurücksetzen klicken)"
-               type="range"/>
-      </div>
+      <label>Pixel zwischen den Augen: {{betweenEyesPixels}}</label>
     </div>
-    <div class="p-mt-2">
-      <div class="ui-g-2 ui-g-nopad">
-        <img [src]="'assets/images/contrast.jpg'"
-             alt=""
-             class="jsman img-btn-small"
-             title="Bildkontrast ändern (zum Zurücksetzen klicken)">
-      </div>
-      <div class="ui-g-10 ui-g-nopad">
-        <input (input)="contrastChanged()"
-               [(ngModel)]="contrastSliderValue"
-               class="jsman jsman_slider"
-               max="100"
-               min="-100"
-               title="Bildkontrast ändern (zum Zurücksetzen klicken)"
-               type="range"/>
-      </div>
+
+    <div *ngIf="tableVisible" class="p-mt-2">
+      <table class="personal-info-table">
+        <tr *ngFor="let data of tableData">
+          <td>{{data.dataKey}}</td>
+          <td>{{data.value}}</td>
+        </tr>
+      </table>
     </div>
   </div>
-  <div class="flex-space p-mt-2" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-    <img (click)="annotateReq()"
-         [src]="'assets/images/eye_position.png'"
-         alt=""
-         class="jsman img-btn-large"
-         title="Augenposition automatisch setzen"
-         style="cursor: pointer; width: 36px; height: 36px;">
-    <img (click)="setLeftEye()"
-         [src]="'assets/images/left_eye.png'"
-         alt=""
-         class="jsman img-btn-large"
-         title="Das linke Auge händisch markieren"
-         style="cursor: pointer; width: 36px; height: 36px;">
-    <img (click)="setRightEye()"
-         [src]="'assets/images/right_eye.png'"
-         alt=""
-         class="jsman img-btn-large"
-         title="Das rechte Auge händisch markieren"
-         style="cursor: pointer; width: 36px; height: 36px;">
-    <img (click)="setNose()"
-         [src]="'assets/images/nose.png'"
-         alt=""
-         class="jsman img-btn-large"
-         title="Die Nasenspitze händisch markieren"
-         style="cursor: pointer; width: 36px; height: 36px;">
-    <img (click)="setLeftMouthCorner()"
-         [src]="'assets/images/left_corner.png'"
-         alt=""
-         class="jsman img-btn-large"
-         title="Die linke Mundecke händisch markieren"
-         style="cursor: pointer; width: 36px; height: 36px;">
-    <img (click)="setRightMouthCorner()"
-         [src]="'assets/images/right_corner.png'"
-         alt=""
-         class="jsman img-btn-large"
-         title="Die rechte Mundecke händisch markieren"
-         style="cursor: pointer; width: 36px; height: 36px;">
-    <img (click)="setBoundingBox()"
-         [src]="'assets/images/bounding-box.png'"
-         alt=""
-         class="jsman img-btn-large"
-         title="Bounding box ručne nastaviť"
-         style="cursor: pointer; width: 36px; height: 36px;">
-    <img (click)="reDrawAnnotated()"
-         [src]="'assets/images/normalization.png'"
-         alt=""
-         class="jsman img-btn-large"
-         title="Bild normalisieren"
-         style="cursor: pointer; width: 36px; height: 36px;">
-    <img (click)="resetCanvas()"
-         [src]="'assets/images/reset.png'"
-         alt=""
-         class="jsman img-btn-large"
-         title="Bild zurücksetzen"
-         style="cursor: pointer; width: 36px; height: 36px;">
-  </div>
-
-  <div class="p-mt-2">
-    <label>Pixel zwischen den Augen: {{betweenEyesPixels}}</label>
-  </div>
-
-  <!-- <div *ngIf="tableVisible"
-       class="p-mt-2">
-    <table class="personal-info-table">
-      <tr *ngFor="let data of tableData">
-        <td>{{data.dataKey}}</td>
-        <td>{{data.value}}</td>
-      </tr>
-    </table>
-  </div> -->
 </div>

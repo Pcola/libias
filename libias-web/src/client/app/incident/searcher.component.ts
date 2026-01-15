@@ -1,26 +1,29 @@
-declare var ImgCompare: any;
+declare var saveAs: any;
 
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateService } from 'ng2-translate';
 import {
   CognitecService,
   CompareDataHolderService,
+  GesService,
   ImageService,
   IncidentService,
   LoginService,
   PersonService,
   ReportService,
-  Utils
+  Utils,
+  SearchRequestService
 } from '../shared/service/index';
 
 import { Message, SelectItem } from 'primeng/primeng';
-import { AnalyzePortraitRequest, IdentificationBinningRequest } from '../shared/model/cognitec/index';
+import { IdentificationBinningRequest } from '../shared/model/cognitec/index';
 import { PersonResponse, PersonsRequest } from '../shared/model/person/index';
 import { SearchReportRequest } from '../shared/model/report/search-report-request';
 import { SearchBulkReportRequest } from '../shared/model/report/search-bulk-report-request';
 import { Match } from '../shared/model/cognitec/identificationBinning-response.model';
 import { ImageType } from '../shared/model/cognitec/imageType.enum';
+import { SearchRequestResponse } from '../shared/model/search-request/search-request.response';
 import {
   GENDER_D,
   GENDER_EMPTY,
@@ -31,24 +34,20 @@ import {
   GROWL_LIFE,
   GROWL_SEVERITY_ERROR,
   NATIONALITY_EMPTY,
-  PAGE_WIDTH,
   ROLE_ADMIN,
   ROLE_SEARCHER
 } from '../shared/constants';
 
-import { Config } from '../shared/config/env.config';
 import { DatePipe } from '@angular/common';
 import { ImageTransformerComponent } from '../shared/image-transformer/image-transformer.component';
-
-declare var saveAs: any;
-declare var base64: any;
+import { GesAnalyseResponse } from '../shared/model/ges/ges-analyse-response.model';
 
 @Component({
   moduleId: module.id,
   templateUrl: 'searcher.component.html',
   providers: [DatePipe]
 })
-export class SearcherComponent implements OnInit {
+export class SearcherComponent implements OnInit, AfterViewInit {
   @ViewChild('imageTransformer') imageTransformer: ImageTransformerComponent;
 
   growlLife = GROWL_LIFE;
@@ -63,9 +62,6 @@ export class SearcherComponent implements OnInit {
   exportFullName = false;
   searchRestricted = false;
   currentPKZ: number = -1;
-  geschlechtTrans: string;
-  geburtsdatumFmt: string;
-  dateModifiedFmt: string;
   relatedPersonsInfo: PersonResponse[];
   caseIdList: number[] = [];
   scoreList: number[] = [];
@@ -82,22 +78,25 @@ export class SearcherComponent implements OnInit {
   selectedGender: string = GENDER_EMPTY;
   nationalities: SelectItem[];
   selectedNationality: string = NATIONALITY_EMPTY;
+  note: string = '';
 
-  isStatusOpen = false;
+  searchRequestId: string = '';
 
-  constructor (
+  constructor(
     private route: ActivatedRoute,
     private router: Router,
     private translate: TranslateService,
     private utils: Utils,
     private loginService: LoginService,
     private cognitecService: CognitecService,
+    private gesService: GesService,
     private imageService: ImageService,
     private reportService: ReportService,
     private personService: PersonService,
     private datePipe: DatePipe,
     private incidentService: IncidentService,
-    private compareDataHolderService: CompareDataHolderService
+    private compareDataHolderService: CompareDataHolderService,
+    private searchRequestService: SearchRequestService
   ) {
   }
 
@@ -106,49 +105,155 @@ export class SearcherComponent implements OnInit {
     this.relatedPersonsInfo = [];
     this.caseIdList = [];
     this.scoreList = [];
-    if (!this.loginService.isAuthenticated() || !this.loginService.isAuthorized([ROLE_SEARCHER, ROLE_ADMIN])) {
+    this.minScore = this.MIN_SCORE;
+    this.maxCandidates = this.MAX_CANDIDATES;
+
+    if (!this.loginService.isAuthenticated() || ! this.loginService.isAuthorized([ROLE_SEARCHER, ROLE_ADMIN])) {
       this.loginService.logout(true);
     } else {
       this.fillGender();
       this.fillNationalities();
+
+      this.route.queryParams.subscribe(params => {
+        if (params['requestId']) {
+          this.searchRequestId = params['requestId'];
+          setTimeout(() => {
+            this.loadPreviousSearch();
+          }, 200);
+        }
+      });
     }
+  }
+
+  ngAfterViewInit() {
+    setTimeout(() => {
+      if (this.imageTransformer) {
+        this.imageTransformer.setAnnotateCnvReq(this.annotateReq.bind(this));
+        this.imageTransformer.setPrimaryActionReq(this.searchDatabase.bind(this));
+        this.imageTransformer.setSecondaryActionReq(this.gesVerifyModified.bind(this));
+      }
+    }, 100);
+  }
+
+  private searchDatabase(): void {
+    const img = this.imageTransformer.getModifiedImage(false);
+    if (!img) {
+      this.utils.showGrowl(this.msgs, GROWL_SEVERITY_ERROR, 'label.Error', 'error.NoImageLoaded');
+      return;
+    }
+    this.identificationBinning(img, ImageType.CANVAS_IMAGE);
+  }
+
+  private gesVerifyModified(): void {
+    const img1 = this.imageTransformer.getModifiedImage(true);
+    const img2 = this.imageTransformer.getModifiedImage(false);
+
+    if (!img1 || !img2) {
+      this.utils.showGrowl(this.msgs, GROWL_SEVERITY_ERROR, 'label.Error', 'error.ImagesNotLoaded');
+      return;
+    }
+
+    this.busy = true;
+
+    this.gesService.compareEmbeddings(img1, img2).subscribe(
+      resp => {
+        this.busy = false;
+        if (resp && resp.score !== undefined) {
+          var score = parseFloat(this.utils.floorFigure(resp.score, 2));
+          this.imageTransformer.setScore(score, resp.score);
+        }
+      },
+      err => {
+        this.busy = false;
+        this.utils.showGrowl(this.msgs, GROWL_SEVERITY_ERROR, 'label.Error', 'error.GesCompareFailed');
+      }
+    );
+  }
+
+  loadPreviousSearch() {
+    if (! this.searchRequestId) {
+      this.utils.showGrowl(this.msgs, GROWL_SEVERITY_ERROR, 'label.Error', 'Zadaj Request ID');
+      return;
+    }
+
+    this.busy = true;
+    const requestId = parseInt(this.searchRequestId, 10);
+
+    this.searchRequestService.getById(requestId).subscribe(
+      (resp: SearchRequestResponse) => {
+        this.busy = false;
+
+        if (!resp || !resp.requestId) {
+          this.utils.showGrowl(this.msgs, GROWL_SEVERITY_ERROR, 'label.Error', 'Request not found');
+          return;
+        }
+
+        if (resp.bilddaten) {
+          const base64Raw = (typeof resp.bilddaten === 'string') ? resp.bilddaten : this.arrayBufferToBase64(resp.bilddaten);
+          const dataUri = 'data:image/png;base64,' + base64Raw;
+          this.imageTransformer.loadImage(false, dataUri);
+        } else {
+          this.imageTransformer.resetImage(false);
+        }
+
+        this.maxCandidates = resp.maxCandidates || this.MAX_CANDIDATES;
+        this.minScore = resp.minScore || this.MIN_SCORE;
+        this.selectedGender = resp.geschlecht || GENDER_EMPTY;
+        this.selectedNationality = resp.staatsangehoerigkeit || NATIONALITY_EMPTY;
+        if (resp.bemerkung) this.imageTransformer.setNote(resp.bemerkung);
+
+        if (resp.bilddaten) {
+          const base64Raw = (typeof resp.bilddaten === 'string') ? resp.bilddaten : this.arrayBufferToBase64(resp.bilddaten);
+          const t = resp.transformation;
+          const n = Number(t);
+          const imgTypeEnum: ImageType = (! isNaN(n) && (n === ImageType.ORIG_IMAGE || n === ImageType.CANVAS_IMAGE))
+            ? n as ImageType
+            : ImageType.CANVAS_IMAGE;
+
+          this.identificationBinning(base64Raw, imgTypeEnum, requestId);
+        } else {
+          this.utils.showGrowl(this.msgs, GROWL_SEVERITY_ERROR, 'label.Error', 'label.NoImageInRequest');
+        }
+      },
+      err => {
+        this.busy = false;
+        this.utils.showGrowl(this.msgs, GROWL_SEVERITY_ERROR, 'label.Error', 'Error loading search');
+      }
+    );
+  }
+
+  private arrayBufferToBase64(buffer: any): string {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return window.btoa(binary);
   }
 
   onChangedIncidentMatch(evt: any) {
-    if (!evt) {
+    if (! evt) {
       return;
     }
-    console.debug('Selected case: ' + JSON.stringify(evt));
-    let match: Match = evt.value ? evt.value : evt;
+    let match: Match = evt.value ?  evt.value : evt;
     this.loadPersonImage(match);
   }
 
-  /**
-   * Allow the user to scroll through the list of related cases using the up and down arrow keys.
-   * Update the scroll position to keep the selected item in view if it is off-screen.
-   *
-   * @param event KeyDown or Up event to handle
-   */
   updateSelectionOnScroll(event: KeyboardEvent) {
-    // Prevent default behavior
     event.preventDefault();
-
-    // Determine direction based on key code (38 = Up, 40 = Down)
-    const direction = event.keyCode === 38 ? -1 : event.keyCode === 40 ? 1 : 0;
-    if (direction === 0) return; // Exit if not up or down arrow
+    const direction = event.keyCode === 38 ? -1 : event.keyCode === 40 ?  1 : 0;
+    if (direction === 0) return;
 
     let index = this.relatedCases.findIndex(item => item.value === this.selectedCaseId) + direction;
-    // Ensure index stays within bounds
     index = Math.max(0, Math.min(this.relatedCases.length - 1, index));
     this.selectedCaseId = this.relatedCases[index].value;
 
-    // Scroll to selected element
     const selectedElement = document.querySelector('.ui-listbox-item.ui-state-highlight');
     if (selectedElement) {
-      selectedElement.scrollIntoView({behavior: 'instant', block: 'start'});
+      selectedElement.scrollIntoView({ behavior: 'instant', block: 'start' });
     }
 
-    this.onChangedIncidentMatch({value: this.selectedCaseId});
+    this.onChangedIncidentMatch({ value: this.selectedCaseId });
   }
 
   protected exportSingle(isFull: boolean) {
@@ -160,7 +265,7 @@ export class SearcherComponent implements OnInit {
     searchReportRequest.marisImageOptimized = this.imageTransformer.getModifiedImage(false);
     searchReportRequest.compImageOptimized = this.imageTransformer.getModifiedImage(false);
     searchReportRequest.note = this.imageTransformer.getNote();
-    searchReportRequest.score = this.selectedCaseId.score; // interval 0-1
+    searchReportRequest.score = this.selectedCaseId.score;
     searchReportRequest.lang = this.translate.getBrowserLang();
     searchReportRequest.isFullName = this.exportFullName;
     searchReportRequest.isFull = isFull;
@@ -171,7 +276,6 @@ export class SearcherComponent implements OnInit {
         if (response.size === 0) {
           this.busy = false;
           this.utils.showGrowl(this.msgs, GROWL_SEVERITY_ERROR, 'label.Error', 'error.GetReport');
-          console.log('Cannot download report: size 0');
         } else {
           saveAs(response, 'LIBIAS_EXT_PKZ_' + this.currentPKZ + (isFull ? '_mit' : '_ohne') + '_Trefferwert.pdf');
           this.busy = false;
@@ -179,7 +283,6 @@ export class SearcherComponent implements OnInit {
       }, err => {
         this.busy = false;
         this.utils.showGrowl(this.msgs, GROWL_SEVERITY_ERROR, 'label.Error', 'error.GetReport');
-        console.log('Cannot download report: ' + err);
       }
     );
   }
@@ -199,7 +302,6 @@ export class SearcherComponent implements OnInit {
         if (response.size === 0) {
           this.busy = false;
           this.utils.showGrowl(this.msgs, GROWL_SEVERITY_ERROR, 'label.Error', 'error.GetReport');
-          console.log('Cannot download report: size 0');
         } else {
           saveAs(response, 'LIBIAS_Suchergebnis.xlsx');
           this.busy = false;
@@ -207,76 +309,65 @@ export class SearcherComponent implements OnInit {
       }, err => {
         this.busy = false;
         this.utils.showGrowl(this.msgs, GROWL_SEVERITY_ERROR, 'label.Error', 'error.GetReport');
-        console.log('Cannot download report: ' + err);
       }
     );
   }
 
-  private verifyReq(_img1: any, _img2: any, imgType: number) {
-    this.identificationBinning(_img2, imgType);
-  }
+  private annotateReq = (left: boolean, img: string, isCallingFirstTime: boolean = false): void => {
+    this.busy = true;
 
-  private annotateReq(left: boolean, img: string, isCallingFirstTime: boolean) {
-    this.analyzePortrait(left, img, isCallingFirstTime);
-  }
+    this.gesService.analyzeImage(img).subscribe(
+      (resp: GesAnalyseResponse) => {
+        this.busy = false;
 
-  public eyesAnnotatedFun = (left: boolean, obj: any): void => {
-  console.log('eyesAnnotatedFun called with:', { left, obj });
-  console.log('imageTransformer exists:', !!this.imageTransformer);
-  
-  if (!this.imageTransformer) {
-    console.warn('imageTransformer is not initialized yet');
-    return;
-  }
-  
-  console.log('computeAndUpdateEyeDistance starting...');
-  const eyeDistance = this.imageTransformer.computeAndUpdateEyeDistance(left, obj, true);
-  console.log('Eyes annotated for ' + (left ? 'left' : 'right') + ' image. Distance: ' + eyeDistance);
-}
+        if (!resp || !resp.embedding) {
+          this.utils.showGrowl(this.msgs, GROWL_SEVERITY_ERROR, 'label.Error', 'error.NoFaceDetected');
+          return;
+        }
 
-  private analyzePortrait(left: boolean, img: string, isCallingFirstTime: boolean) {
-  const req = new AnalyzePortraitRequest();
-  req.img = img;
-  this.busy = true;
+        if (resp.bbox && resp.bbox.length >= 5) {
+          const x_top = resp.bbox[0];
+          const y_top = resp.bbox[1];
+          const x_bottom = resp.bbox[2];
+          const y_bottom = resp.bbox[3];
+          const alpha = resp.bbox[4] || 0;
 
-  this.cognitecService.findFaces(req).subscribe(
-    resp => {
-      this.busy = false;
+          const width = x_bottom - x_top;
+          const height = y_bottom - y_top;
+          const centerX = x_top + width / 2;
+          const centerY = y_top + height / 2;
 
-      if (!resp.val || !resp.val.faces || !resp.val.faces[0]) {
-        return;
+          this.imageTransformer.annotateCanvas(
+            left,
+            width,
+            height,
+            alpha,
+            centerX,
+            centerY,
+            isCallingFirstTime ?  0 : 1,
+            false
+          );
+        }
+
+        if (resp.landmarks && resp.landmarks.length >= 10) {
+          const landmarks = {
+            leftEye: { x: resp.landmarks[0], y: resp.landmarks[1] },
+            rightEye: { x: resp.landmarks[2], y: resp.landmarks[3] },
+            noseTip: { x: resp.landmarks[4], y: resp.landmarks[5] },
+            leftMouthCorner: { x: resp.landmarks[6], y: resp.landmarks[7] },
+            rightMouthCorner: { x: resp.landmarks[8], y: resp.landmarks[9] }
+          };
+          this.imageTransformer.setAllLandmarks(left, landmarks);
+        }
+      },
+      err => {
+        this.busy = false;
+        this.utils.showGrowl(this.msgs, GROWL_SEVERITY_ERROR, 'label.Error', 'error.GesAnalysisFailed');
       }
+    );
+  };
 
-      if (resp.val.faces.length > 1) {
-        resp.val.faces.sort((a, b) => b.boundingBox.width - a.boundingBox.width);
-      }
-
-      const face = resp.val.faces[0];
-      
-      if (face.boundingBox) {
-        this.imageTransformer.annotateCanvas(left, face.boundingBox.width, 
-          face.boundingBox.height, face.boundingBox.alpha,
-          face.boundingBox.center.x, face.boundingBox.center.y, 
-          isCallingFirstTime ? 0 : 1, this.isStatusOpen);
-      }
-
-      this.imageTransformer.setAllLandmarks(left, face);
-    },
-    err => {
-      this.busy = false;
-      this.utils.showGrowl(this.msgs, GROWL_SEVERITY_ERROR, 'label.Error', 'error.CallCognitec');
-      console.error('Error getting findFaces: ' + err);
-    }
-  );
-}
-
-  /**
-   * @param img - image to search
-   * @param imageType - type of image
-   *
-   * find all matches to image added by user, for each result also load person data
-   */
-  private identificationBinning(img: string, imageType: ImageType) {
+  private identificationBinning(img: string, imageType: ImageType, requestId?: number) {
     if (this.maxCandidates > this.MAX_CANDIDATES) {
       this.maxCandidates = this.MAX_CANDIDATES;
     }
@@ -292,9 +383,13 @@ export class SearcherComponent implements OnInit {
 
     let req = new IdentificationBinningRequest();
     req.img = img;
-    req.imgType = imageType;
     req.maxMatches = this.maxCandidates;
     req.minScore = this.minScore;
+
+    if (requestId !== undefined && requestId !== null) {
+      req.requestId = requestId;
+    }
+
     this.busy = true;
 
     this.relatedCases = [];
@@ -304,105 +399,107 @@ export class SearcherComponent implements OnInit {
     this.selectedCaseId = undefined;
     this.searchRestricted = false;
 
-    if (this.exportEnabled) {
-      this.imageTransformer.loadImage(false, '');
-      this.imageTransformer.resetImage(false);
-      this.imageTransformer.setScore(0.0);
-      this.imageTransformer.setTableData(false, this.createInfoTable(this.infoTableHeaders, this.infoTableValues));
-      this.exportEnabled = false;
-    }
-
     this.cognitecService.identificationBinning(req).subscribe(
       resp => {
         this.busy = false;
 
-        // fill Matches
-        let matches = resp.val.matches.m;
-        let oids: number[] = [];
+        let foundFace = false;
+        if (resp.val && resp.val.processedImage && resp.val.processedImage.foundFace) {
+          foundFace = true;
 
-        if (matches.length > 0) {
-          for (let match of matches) {
-            oids.push(match.caseID);
+          let faceLoc = resp.val.processedImage.faceLocation;
+          if (faceLoc && faceLoc.leftEye && faceLoc.leftEye.value &&
+            faceLoc.rightEye && faceLoc.rightEye.value) {
+            var obj = {
+              left: { x: faceLoc.rightEye.value.x, y: faceLoc.rightEye.value.y, set: 1 },
+              right: { x: faceLoc.leftEye.value.x, y: faceLoc.leftEye.value.y, set: 1 }
+            };
+            this.imageTransformer.loadImageAnnotated(true, obj);
           }
         }
 
-        let faceLoc = resp.val.processedImage ? resp.val.processedImage.faceLocation : undefined;
-        if (faceLoc && faceLoc.leftEye && faceLoc.leftEye.value && faceLoc.rightEye && faceLoc.rightEye.value) {
-          var res = {
-            left: {x: faceLoc.rightEye.value.x, y: faceLoc.rightEye.value.y, set: 1},
-            right: {x: faceLoc.leftEye.value.x, y: faceLoc.leftEye.value.y, set: 1}
-          };
+        let matches = resp.val.matches.m;
+        let oids: number[] = [];
+
+        if (matches.length === 0) {
+          this.busy = false;
+          if (foundFace) {
+            this.utils.showGrowl(this.msgs, GROWL_SEVERITY_ERROR, 'label.Error', 'label.NoCandidatesFound');
+          } else {
+            this.utils.showGrowl(this.msgs, GROWL_SEVERITY_ERROR, 'label.Error', 'label.FaceNotFound');
+          }
+          return;
         }
 
-        // find persons for image oids
-        if (matches.length > 0) {
-          this.busy = true;
-          let dateNow = new Date();
-          let personsRequest = new PersonsRequest();
-          personsRequest.oids = oids;
+        for (let match of matches) {
+          oids.push(match.caseID);
+        }
 
-          this.personService.getPersons(personsRequest).subscribe(
-            respPersons => {
-              if (!this.utils.containsNullOnly(respPersons)) {
-                for (let match of matches) {
-                  for (let person of respPersons) {
-                    if (String(person.imageOid) === String(match.caseID)) {
-                      if (this.selectedGender !== GENDER_EMPTY && this.selectedGender !== person.gender) {
-                        this.searchRestricted = true;
-                        continue;
-                      }
-                      if (this.selectedNationality !== NATIONALITY_EMPTY && this.selectedNationality !== person.nationality) {
-                        this.searchRestricted = true;
-                        continue;
-                      }
-                      if (this.minAge && !person.age && person.birthDate) {
-                        let birthDateStr = person.birthDate.toString();
-                        person.age = dateNow.getFullYear() - parseInt(birthDateStr.substring(0, 4));
-                        let monthDiff = dateNow.getMonth() + 1 - parseInt(birthDateStr.substring(5, 7));
-                        let dayDiff = dateNow.getDate() - parseInt(birthDateStr.substring(8, 10)) - 1;
-                        if (monthDiff < 0 || monthDiff === 0 && dayDiff < 0) {
-                          person.age = person.age - 1;
-                        }
-                      }
-                      if (!this.minAge || person.age >= this.minAge) {
-                        if (this.selectedCaseId === undefined) {
-                          this.selectedCaseId = match;
-                        }
-                        let lbl = String(person.pkz) + ' - ' + this.utils.floorFigure(match.score * 100.0, 2) + '%';
-                        this.relatedCases.push({ label: lbl, value: match });
-                        this.relatedPersonsInfo.push(person);
-                        this.caseIdList.push(match.caseID);
-                        this.scoreList.push(match.score);
-                        break;
-                      } else {
-                        this.searchRestricted = true;
+        this.busy = true;
+        let dateNow = new Date();
+        let personsRequest = new PersonsRequest();
+        personsRequest.oids = oids;
+
+        this.personService.getPersons(personsRequest).subscribe(
+          respPersons => {
+            if (! this.utils.containsNullOnly(respPersons)) {
+              for (let match of matches) {
+                for (let person of respPersons) {
+                  if (String(person.imageOid) === String(match.caseID)) {
+                    if (this.selectedGender !== GENDER_EMPTY && this.selectedGender !== person.gender) {
+                      this.searchRestricted = true;
+                      continue;
+                    }
+                    if (this.selectedNationality !== NATIONALITY_EMPTY && this.selectedNationality !== person.nationality) {
+                      this.searchRestricted = true;
+                      continue;
+                    }
+                    if (this.minAge && ! person.age && person.birthDate) {
+                      let birthDateStr = person.birthDate.toString();
+                      person.age = dateNow.getFullYear() - parseInt(birthDateStr.substring(0, 4));
+                      let monthDiff = dateNow.getMonth() + 1 - parseInt(birthDateStr.substring(5, 7));
+                      let dayDiff = dateNow.getDate() - parseInt(birthDateStr.substring(8, 10)) - 1;
+                      if (monthDiff < 0 || monthDiff === 0 && dayDiff < 0) {
+                        person.age = person.age - 1;
                       }
                     }
-                  }
-
-                  if (this.relatedCases.length >= this.maxCandidates) {
-                    break;
+                    if (! this.minAge || person.age >= this.minAge) {
+                      if (this.selectedCaseId === undefined) {
+                        this.selectedCaseId = match;
+                      }
+                      let lbl = String(person.pkz) + ' - ' + this.utils.floorFigure(match.score * 100.0, 2);
+                      this.relatedCases.push({ label: lbl, value: match });
+                      this.relatedPersonsInfo.push(person);
+                      this.caseIdList.push(match.caseID);
+                      this.scoreList.push(match.score);
+                      break;
+                    } else {
+                      this.searchRestricted = true;
+                    }
                   }
                 }
 
-                this.onChangedIncidentMatch(this.selectedCaseId);
-                this.busy = false;
-              } else {
-                this.busy = false;
-                this.utils.showGrowl(this.msgs, GROWL_SEVERITY_ERROR, 'label.Error', 'error.GetImage');
-                console.error('Array inside response contains only null values.');
+                if (this.relatedCases.length >= this.maxCandidates) {
+                  break;
+                }
               }
-            }, err2 => {
+
+              if (this.selectedCaseId) {
+                this.onChangedIncidentMatch(this.selectedCaseId);
+              }
+              this.busy = false;
+            } else {
               this.busy = false;
               this.utils.showGrowl(this.msgs, GROWL_SEVERITY_ERROR, 'label.Error', 'error.GetImage');
-              console.error('Cannot get images. ' + err2);
-            });
-        }
+            }
+          }, err2 => {
+            this.busy = false;
+            this.utils.showGrowl(this.msgs, GROWL_SEVERITY_ERROR, 'label.Error', 'error.GetImage');
+          });
       },
       err => {
         this.busy = false;
         this.utils.showGrowl(this.msgs, GROWL_SEVERITY_ERROR, 'label.Error', 'error.CallCognitec');
-        console.error('Error getting identificationBinning: ' + err);
       }
     );
   }
@@ -427,57 +524,59 @@ export class SearcherComponent implements OnInit {
             this.nationalities.push({ label: c, value: c });
           }
         }
-      },
-      err => {
-        console.log('Error getting list of nationalities: ' + err);
       }
     );
   }
 
-  /**
-   * Get left person image by given caseID and set score.
-   */
   private loadPersonImage(m: Match) {
+    this.busy = true;
+
     this.imageService.getImage(m.caseID).subscribe(
       resp => {
         if (resp && resp.imageData) {
-          this.imageTransformer.loadImage(false, 'data:image/png;base64,' + resp.imageData);
+          const imageDataUrl = 'data:image/png;base64,' + resp.imageData;
+          this.imageTransformer.loadImage(true, imageDataUrl);
         } else {
-          this.imageTransformer.loadImage(false, '');
-          this.imageTransformer.resetImage(false);
+          this.imageTransformer.resetImage(true);
         }
-        this.imageTransformer.setScore(m.score);
-        let person: PersonResponse = this.relatedPersonsInfo.filter(function(item) {return String(item.imageOid) === String(m.caseID);})[0];
+
+        let person: PersonResponse = this.relatedPersonsInfo.filter(function (item) {
+          return String(item.imageOid) === String(m.caseID);
+        })[0];
         this.showPersonalInfo(person);
 
         this.cognitecService.getImage(m.caseID).subscribe(
-          resp => {
-            this.busy = false;
-            if (resp && resp.eyelx && resp.eyely && resp.eyerx && resp.eyery) {
-              var obj = { left: { x: resp.eyerx, y: resp.eyery, set: 1 }, right: { x: resp.eyelx, y: resp.eyely, set: 1 } };
-              this.imageTransformer.loadImageAnnotated(false, obj);
-            } else {
-              this.imageTransformer.resetImage(false);
+          cogResp => {
+            if (cogResp && cogResp.eyelx && cogResp.eyely && cogResp.eyerx && cogResp.eyery) {
+              var obj = {
+                left: { x: cogResp.eyerx, y: cogResp.eyery, set: 1 },
+                right: { x: cogResp.eyelx, y: cogResp.eyely, set: 1 }
+              };
+              this.imageTransformer.loadImageAnnotated(true, obj);
             }
+
+            this.busy = false;
+
+            var matchScore = parseFloat(this.utils.floorFigure(m.score * 100.0, 2));
+            this.imageTransformer.setScore(matchScore);
           },
           err => {
             this.busy = false;
             this.utils.showGrowl(this.msgs, GROWL_SEVERITY_ERROR, 'label.Error', 'error.GetImage');
-            console.log('Cannot get Cognitec image: ' + err);
-            this.utils.isErrorForbidden(err);
           }
         );
       },
       err => {
         this.busy = false;
         this.utils.showGrowl(this.msgs, GROWL_SEVERITY_ERROR, 'label.Error', 'error.GetImage');
-        console.log('Cannot get image: ' + err);
-        this.utils.isErrorForbidden(err);
       }
     );
   }
 
   private showPersonalInfo(response: PersonResponse) {
+    if (! response) {
+      return;
+    }
     let geschlechtTrans = null;
     this.translate.get('label.Sex.' + response.gender).subscribe(v => { geschlechtTrans = v; });
     let values: string[] = [
@@ -496,39 +595,15 @@ export class SearcherComponent implements OnInit {
     ];
 
     this.currentPKZ = response.pkz;
-    this.imageTransformer.setTableData(false, this.createInfoTable(this.infoTableHeaders, values));
+
+    const infoTableHeaders = ['PKZ', 'Aktenzeichen', 'Antragstyp', 'Familienname', 'Vorname', 'Geburtsdatum', 'Geburtsort',
+      'Staatsangehörigkeit', 'Geschlecht', 'AZR-Nummer', 'D-Nummer', 'Aufnahmedatum (MARiS-Bild)'];
+
+    const infoTableData = this.createInfoTable(infoTableHeaders, values);
+
+    this.imageTransformer.setTableData(true, infoTableData);
+
     this.exportEnabled = true;
-  }
-
-  private getComponentPos(idx: number): any {
-    const compareDiv = document.getElementById('compare-div');
-    if (!compareDiv) {
-      return {};
-    }
-    const rect = compareDiv.getBoundingClientRect();
-    const pos = {
-      x: rect.left,
-      y: rect.top,
-      w: rect.width,
-      h: rect.height
-    };
-
-    if (idx < 3) {
-      return {
-        'left': pos.x + 'px',
-        'top': (pos.y + pos.h + 15 + idx * 40) + 'px',
-        'width': pos.w + 'px'
-      };
-    } else if (idx === 3) {
-      return {
-        'left': pos.x + 'px',
-        'top': (pos.y + pos.h + 135) + 'px',
-        'width': pos.w + 'px',
-        'text-align': 'center'
-      };
-    } else {
-      return {};
-    }
   }
 
   private createInfoTable(headers: string[], values: string[]): any[] {

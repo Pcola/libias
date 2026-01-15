@@ -18,6 +18,9 @@ public class ServerConfig {
     @Value("${cognitec.identificationBinning.priority}")
     private String identificationBinningPriority;
 
+    @Value("${ges.base-url}")
+    private String gesBaseUrl;
+
     @Value("${maris.person.url}")
     private String marisPersonUrl;
 
@@ -84,6 +87,44 @@ public class ServerConfig {
     @Value("${incident.query.useHintForCount:false}")
     private boolean useHintForCount;
 
+    @Value("${ges.search.size:100}")
+    private int searchSize;
+
+    @Value("${zimp.base-url}")
+    private String zimpBaseUrl;
+
+    @Value("${ges.enabled:true}")
+    private boolean gesEnabled;
+
+    @Value("${elasticsearch.index.name}")
+    private String gesIndexName;
+
+    @Value("${elasticsearch.elastic.user}")
+    private String gesElasticUser;
+
+    @Value("${elasticsearch.elastic.pwd}")
+    private String gesElasticPwd;
+
+    public boolean isGesEnabled() {
+        return gesEnabled;
+    }
+
+    public int getSearchSize() {
+        return searchSize;
+    }
+
+    public String getGesElasticUser() {
+        return gesElasticUser;
+    }
+
+    public String getGesIndexName() {
+        return gesIndexName;
+    }
+
+    public String getGesElasticPwd() {
+        return gesElasticPwd;
+    }
+
     public String getCognitecSoapUrl() {
         return cognitecSoapUrl;
     }
@@ -95,6 +136,10 @@ public class ServerConfig {
     public String getIdentificationBinningPriority() {
         return identificationBinningPriority;
     }
+
+    public String getGesBaseUrl() { return gesBaseUrl; }
+
+    public String getZimpBaseUrl() { return zimpBaseUrl; }
 
     public String getMarisPersonUrl() {
         return marisPersonUrl;

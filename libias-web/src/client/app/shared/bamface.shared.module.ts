@@ -1,5 +1,5 @@
 import { NgModule, ModuleWithProviders } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
@@ -9,7 +9,10 @@ import { ConfirmationService } from 'primeng/primeng';
 import { IncidentService, HttpService, UserService, PersonService, StatisticService, ImageService, Logger,
   Utils, ReportService, LoginService, DataImportService, VersionService, WorkplaceService, CognitecService,
   NotificationService, PriorityService, 
-  CompareDataHolderService}
+  CompareDataHolderService,
+  TrafficLightService,
+  GesService,
+  SearchRequestService}
   from './service/index';
 import { AccountEventsService } from './account/account.events.service';
 
@@ -20,7 +23,7 @@ import { ImgManComponent } from './image-transformer/img-man/img-man.component';
 
 const PIPES = [ScorePipe];
 const SERVICES = [IncidentService, UserService, PersonService, StatisticService, ImageService, HttpService, Logger, Utils, ReportService,
-  LoginService, AccountEventsService, DataImportService, VersionService, WorkplaceService, CognitecService, NotificationService, PriorityService, CompareDataHolderService];
+  LoginService, AccountEventsService, DataImportService, VersionService, WorkplaceService, CognitecService, NotificationService, PriorityService, CompareDataHolderService, TrafficLightService, GesService, SearchRequestService];
 
 /**
  * Do not specify providers for modules that might be imported by a lazy loaded module.
@@ -29,7 +32,7 @@ const SERVICES = [IncidentService, UserService, PersonService, StatisticService,
   imports: [CommonModule, RouterModule, FormsModule, TranslateModule, ButtonModule, InputTextareaModule],
   declarations: [...PIPES, ImageTransformerComponent, ImageComparerComponent, ImgManComponent],
   exports: [...PIPES, CommonModule, FormsModule, RouterModule, TranslateModule, ImageTransformerComponent, ImageComparerComponent, ImgManComponent],
-  providers: [...SERVICES]
+  providers: [...SERVICES, DatePipe]
 })
 export class BAMFaceSharedModule {
   static forRoot(): ModuleWithProviders {

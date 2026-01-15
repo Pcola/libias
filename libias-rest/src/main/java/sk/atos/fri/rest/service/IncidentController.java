@@ -1,10 +1,5 @@
 package sk.atos.fri.rest.service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,17 +7,18 @@ import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-//import org.springframework.security.access.annotation.Secured;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import sk.atos.fri.common.Constants;
 import sk.atos.fri.dao.LogTypeStatus;
-import sk.atos.fri.dao.libias.model.Incident;
-import sk.atos.fri.dao.libias.service.IncidentService;
+import sk.atos.fri.dao.libias.domain.Incident;
+import sk.atos.fri.dao.libias.enums.SourceSystem;
+import sk.atos.fri.dao.libias.service.IIncidentService;
 import sk.atos.fri.log.Error;
 import sk.atos.fri.log.Logger;
 import sk.atos.fri.rest.model.FinishCaseRequest;
@@ -32,6 +28,12 @@ import sk.atos.fri.rest.model.IncidentSearchRequest;
 import sk.atos.fri.rest.model.IncidentUpdateRequest;
 import sk.atos.fri.rest.model.RelatedCase;
 
+import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+
 @RestController
 @RequestMapping(path = "/incident")
 public class IncidentController {
@@ -40,7 +42,7 @@ public class IncidentController {
   private Logger LOG;
 
   @Autowired
-  private IncidentService incidentService;
+  private IIncidentService incidentService;
 
   @Autowired
   private MessageSource messageSource;
@@ -48,8 +50,12 @@ public class IncidentController {
   @RequestMapping(path = "/count",
           method = RequestMethod.GET,
           produces = MediaType.APPLICATION_JSON_VALUE)
-  public long getCountAll() {
-    return incidentService.countAll();
+  public long getCountAll(
+          @RequestParam(value = "system", required = false) String systemParam,
+          @RequestHeader(value = "X-System", required = false) String xSystemHeader
+  ) {
+    SourceSystem system = resolveSystem(systemParam, xSystemHeader);
+    return system == null ? incidentService.countAll() : incidentService.countAll(system);
   }
 
   /**
@@ -62,14 +68,19 @@ public class IncidentController {
                   method = RequestMethod.POST,
                   consumes = MediaType.APPLICATION_JSON_VALUE,
                   produces = MediaType.APPLICATION_JSON_VALUE)
-  public IncidentResponse getIncidents(@RequestBody IncidentSearchRequest request, HttpServletRequest httpServletRequest) {
+  public IncidentResponse getIncidents(@RequestBody IncidentSearchRequest request, HttpServletRequest httpServletRequest, @RequestParam(value = "system", required = false) String systemParam,
+                                       @RequestHeader(value = "X-System", required = false) String xSystemHeader) {
+    SourceSystem system = resolveSystem(systemParam, xSystemHeader);
     String username = null;
     try {	
       username = httpServletRequest.getUserPrincipal().getName();
       LOG.debug(username, "Reading cases: " + ToStringBuilder.reflectionToString(request, ToStringStyle.JSON_STYLE));
       long anfang = (new Date()).getTime();
-      List<Incident> result = incidentService.searchIncident(request.getShowDoubleEvents(), request, httpServletRequest);
-      Long resultCount = incidentService.incidentsCount(request.getShowDoubleEvents(), request, httpServletRequest);
+      List<Incident> result = system == null ? incidentService.searchIncident(request.getShowDoubleEvents(), request, httpServletRequest) : incidentService.searchIncident(request.getShowDoubleEvents(), request, httpServletRequest, system);
+      if (result != null) {
+        result.forEach(i -> i.handleAkteLocked());
+      }
+      Long resultCount = system == null ? incidentService.incidentsCount(request.getShowDoubleEvents(), request, httpServletRequest) : incidentService.incidentsCount(request.getShowDoubleEvents(), request, httpServletRequest, system);
       long ende = (new Date()).getTime();
       LOG.debug(username, "Result: " + (result != null ? result.size() : "null") + "/" + resultCount + " in " + (ende - anfang) + " ms");
       return new IncidentResponse(result, resultCount);
@@ -89,13 +100,15 @@ public class IncidentController {
                   method = RequestMethod.POST,
                   consumes = MediaType.APPLICATION_JSON_VALUE,
                   produces = MediaType.APPLICATION_JSON_VALUE)
-  public Long getSearchedIncidentsCount(@RequestBody IncidentSearchRequest request, HttpServletRequest httpServletRequest) {
+  public Long getSearchedIncidentsCount(@RequestBody IncidentSearchRequest request, HttpServletRequest httpServletRequest, @RequestParam(value = "system", required = false) String systemParam,
+                                        @RequestHeader(value = "X-System", required = false) String xSystemHeader) {
+    SourceSystem system = resolveSystem(systemParam, xSystemHeader);
     String username = null;
     try {
       username = httpServletRequest.getUserPrincipal().getName();      
       LOG.debug(username, "Reading count of cases: " + ToStringBuilder.reflectionToString(request, ToStringStyle.JSON_STYLE));
       long anfang = (new Date()).getTime();
-      Long result = incidentService.incidentsCount(request.getShowDoubleEvents(), request, httpServletRequest);
+      Long result = system == null ? incidentService.incidentsCount(request.getShowDoubleEvents(), request, httpServletRequest) : incidentService.incidentsCount(request.getShowDoubleEvents(), request, httpServletRequest, system);
       long ende = (new Date()).getTime();
       LOG.debug(username, "Result: " + result + " in " + (ende - anfang) + " ms");
       return result;
@@ -114,13 +127,15 @@ public class IncidentController {
   @RequestMapping(path = "/{caseId}",
                   method = RequestMethod.GET,
                   produces = MediaType.APPLICATION_JSON_VALUE)
-  public Incident getIncident(@PathVariable Long caseId, HttpServletRequest httpServletRequest) {
+  public Incident getIncident(@PathVariable Long caseId, HttpServletRequest httpServletRequest, @RequestParam(value = "system", required = false) String systemParam,
+                              @RequestHeader(value = "X-System", required = false) String xSystemHeader) {
+    SourceSystem system = resolveSystem(systemParam, xSystemHeader);
     String username = null;
     try {
       username = httpServletRequest.getUserPrincipal().getName();
       LOG.debug(username, "Reading case with caseId " + caseId);
-      Incident incident = incidentService.findByCaseId(caseId);
-      if (incident.getIncidentHistory().size() != 0) {
+      Incident incident = system == null ? incidentService.findByCaseId(caseId) : incidentService.findByCaseId(caseId, system);
+      if (!incident.getIncidentHistory().isEmpty()) {
         LOG.debug(username, "Case " + caseId + " FOUND HISTORY RECORDS: " + incident.getIncidentHistory().size());
       } else {
         LOG.debug(username, "Case " + caseId + " NO HISTORY RECORD");
@@ -143,11 +158,13 @@ public class IncidentController {
                   consumes = MediaType.APPLICATION_JSON_VALUE,
                   produces = MediaType.APPLICATION_JSON_VALUE)
   @Transactional
-  public ResponseEntity<Void> updateCase(@RequestBody IncidentUpdateRequest request, HttpServletRequest httpServletRequest) {
+  public ResponseEntity<Void> updateCase(@RequestBody IncidentUpdateRequest request, HttpServletRequest httpServletRequest, @RequestParam(value = "system", required = false) String systemParam,
+                                         @RequestHeader(value = "X-System", required = false) String xSystemHeader) {
     if (request == null) {
       throw new IllegalArgumentException("Request body was not send");
     }
 
+    SourceSystem system = resolveSystem(systemParam, xSystemHeader);
     String username = null;
 
     int result = 0;
@@ -157,9 +174,9 @@ public class IncidentController {
     try {
       username = httpServletRequest.getUserPrincipal().getName();
       LOG.info(username, "Updating case: " + ToStringBuilder.reflectionToString(request, ToStringStyle.JSON_STYLE));
-      inc = incidentService.findByCaseId(request.getCaseId());
+      inc = system == null ?  incidentService.findByCaseId(request.getCaseId()) : incidentService.findByCaseId(request.getCaseId(), system);
       prevState = inc.getStatus().getStatusId();
-      result = incidentService.updateCase(inc, request, httpServletRequest);
+      result = system == null ? incidentService.updateCase(inc, request, httpServletRequest) : incidentService.updateCase(inc, request, httpServletRequest, system);
     } catch (Exception e) {
       LOG.error(username, Error.UPDATE_CASE, e);
       if (e.getCause() instanceof IllegalStateException) {
@@ -191,11 +208,13 @@ public class IncidentController {
   @RequestMapping(path = "/referencetype/all",
                   method = RequestMethod.GET,
                   produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<String> getAllFileReference(HttpServletRequest httpServletRequest) {
+  public List<String> getAllFileReference(HttpServletRequest httpServletRequest, @RequestParam(value = "system", required = false) String systemParam,
+                                          @RequestHeader(value = "X-System", required = false) String xSystemHeader) {
+    SourceSystem system = resolveSystem(systemParam, xSystemHeader);
     String username = null;
     try {
       username = httpServletRequest.getUserPrincipal().getName();
-      return incidentService.findAllReferenceType();
+      return system == null ? incidentService.findAllReferenceType() : incidentService.findAllReferenceType(system);
     } catch (Exception e) {
       LOG.error(username, Error.LIST_REFERENCE_NUMBER, e);
       throw e;
@@ -210,11 +229,13 @@ public class IncidentController {
   @RequestMapping(path = "/nationality/all",
                   method = RequestMethod.GET,
                   produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<String> getNationalities(HttpServletRequest httpServletRequest) {
+  public List<String> getNationalities(HttpServletRequest httpServletRequest, @RequestParam(value = "system", required = false) String systemParam,
+                                       @RequestHeader(value = "X-System", required = false) String xSystemHeader) {
+    SourceSystem system = resolveSystem(systemParam, xSystemHeader);
     String username = null;
     try {
       username = httpServletRequest.getUserPrincipal().getName();
-      return incidentService.findAllNationalities();
+      return system == null ? incidentService.findAllNationalities() : incidentService.findAllNationalities(system);
     } catch (Exception e) {
       LOG.error(username, Error.LIST_NATIONALITIES, e);
       throw e;
@@ -231,14 +252,19 @@ public class IncidentController {
                   method = RequestMethod.POST,
                   produces = MediaType.APPLICATION_JSON_VALUE)
   //@Secured({Constants.ROLE_AUSSENSTELLEUSER})
-  public IncidentResponse getAussenstelerCases(@RequestBody IncidentSearchRequest filter, HttpServletRequest httpServletRequest) {
+  public IncidentResponse getAussenstelerCases(@RequestBody IncidentSearchRequest filter, HttpServletRequest httpServletRequest, @RequestParam(value = "system", required = false) String systemParam,
+                                               @RequestHeader(value = "X-System", required = false) String xSystemHeader) {
+    SourceSystem system = resolveSystem(systemParam, xSystemHeader);
     String username = null;
     try {
       username = httpServletRequest.getUserPrincipal().getName();
       LOG.debug(username, "Reading workplace cases: " + ToStringBuilder.reflectionToString(filter, ToStringStyle.JSON_STYLE));
       long anfang = (new Date()).getTime();
-      List<Incident> result = incidentService.findAussenstellerCases(filter, username);
-      Long resultCount = incidentService.aussenstellerCasesCount(filter, username);
+      List<Incident> result = system == null ? incidentService.findAussenstellerCases(filter, username) : incidentService.findAussenstellerCases(filter, username, system);
+      if (result != null) {
+        result.forEach(i -> i.handleAkteLocked());
+      }
+      Long resultCount = system == null ? incidentService.aussenstellerCasesCount(filter, username) : incidentService.aussenstellerCasesCount(filter, username, system);
       long ende = (new Date()).getTime();
       LOG.debug(username, "Result: " + (result != null ? result.size() : "null") + "/" + resultCount + " in " + (ende - anfang) + " ms");
       return new IncidentResponse(result, resultCount);
@@ -258,13 +284,15 @@ public class IncidentController {
                   method = RequestMethod.POST,
                   produces = MediaType.APPLICATION_JSON_VALUE)
   //@Secured({Constants.ROLE_AUSSENSTELLEUSER})
-  public Long getAussenstelerCasesCount(@RequestBody IncidentSearchRequest filter, HttpServletRequest httpServletRequest) {
+  public Long getAussenstelerCasesCount(@RequestBody IncidentSearchRequest filter, HttpServletRequest httpServletRequest, @RequestParam(value = "system", required = false) String systemParam,
+                                        @RequestHeader(value = "X-System", required = false) String xSystemHeader) {
+    SourceSystem system = resolveSystem(systemParam, xSystemHeader);
     String username = null;
     try {
       username = httpServletRequest.getUserPrincipal().getName();
       LOG.debug(username, "Reading count of workplace cases: " + ToStringBuilder.reflectionToString(filter, ToStringStyle.JSON_STYLE));
       long anfang = (new Date()).getTime();
-      Long result = incidentService.aussenstellerCasesCount(filter, username);
+      Long result = system == null ? incidentService.aussenstellerCasesCount(filter, username) : incidentService.aussenstellerCasesCount(filter, username, system);
       long ende = (new Date()).getTime();
       LOG.debug(username, "Result: " + result + " in " + (ende - anfang) + " ms");
       return result;
@@ -288,16 +316,22 @@ public class IncidentController {
                   produces = MediaType.APPLICATION_JSON_VALUE)
   @Transactional
   //@Secured({Constants.ROLE_AUSSENSTELLEUSER})
-  public ResponseEntity<Void> finishCase(@RequestBody FinishCaseRequest request, HttpServletRequest httpServletRequest) {
+  public ResponseEntity<Void> finishCase(@RequestBody FinishCaseRequest request, HttpServletRequest httpServletRequest, @RequestParam(value = "system", required = false) String systemParam,
+                                         @RequestHeader(value = "X-System", required = false) String xSystemHeader) {
     if (request == null) {
       throw new IllegalArgumentException("Request body was not send");
     }
+    SourceSystem system = resolveSystem(systemParam, xSystemHeader);
     String username = null;
 
     try {
       username = httpServletRequest.getUserPrincipal().getName();
       LOG.info(username, "Finishing case: " + ToStringBuilder.reflectionToString(request, ToStringStyle.JSON_STYLE));
-      incidentService.finishCase(request, httpServletRequest);
+      if (system == null) {
+        incidentService.finishCase(request, httpServletRequest);
+      } else {
+        incidentService.finishCase(request, httpServletRequest, system);
+      }
       LOG.info(username, "Case with caseId " + request.getCaseId() + " finished");
     } catch (Exception e) {
       LOG.error(username, Error.FINISH_CASE, e);
@@ -315,11 +349,13 @@ public class IncidentController {
   @RequestMapping(path = "/incidentstypecount",
                   method = RequestMethod.GET,
                   produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<IncidentCountResponse> getIncidentCounts(HttpServletRequest httpServletRequest) {
+  public List<IncidentCountResponse> getIncidentCounts(HttpServletRequest httpServletRequest, @RequestParam(value = "system", required = false) String systemParam,
+                                                       @RequestHeader(value = "X-System", required = false) String xSystemHeader) {
+    SourceSystem system = resolveSystem(systemParam, xSystemHeader);
     String username = null;
     try {
       username = httpServletRequest.getUserPrincipal().getName();
-      return incidentService.countCasesByStatus();
+      return system == null ?  incidentService.countCasesByStatus() : incidentService.countCasesByStatus(system);
     } catch (Exception e) {
       LOG.error(username, Error.GET_STATISTICS, e);
       throw e;
@@ -335,12 +371,14 @@ public class IncidentController {
   @RequestMapping(path = "/relatedcases/{caseId}",
                   method = RequestMethod.GET,
                   produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<RelatedCase> getRelatedCases(@PathVariable Long caseId, HttpServletRequest httpServletRequest) {
+  public List<RelatedCase> getRelatedCases(@PathVariable Long caseId, HttpServletRequest httpServletRequest, @RequestParam(value = "system", required = false) String systemParam,
+                                           @RequestHeader(value = "X-System", required = false) String xSystemHeader) {
+    SourceSystem system = resolveSystem(systemParam, xSystemHeader);
     String username = null;
     try {
       username = httpServletRequest.getUserPrincipal().getName();
       LOG.debug(username, "Reading related cases for caseId " + caseId);
-      return incidentService.getRelatedCases(caseId);
+      return system == null ? incidentService.getRelatedCases(caseId) : incidentService.getRelatedCases(caseId, system);
     } catch (Exception e) {
       LOG.error(username, Error.GET_SITE_RELATED_CASES, e);
       throw e;
@@ -356,12 +394,14 @@ public class IncidentController {
   @RequestMapping(path = "/siterelatedcases/{caseId}",
                   method = RequestMethod.GET,
                   produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<RelatedCase> getSiteRelatedCases(@PathVariable Long caseId, HttpServletRequest httpServletRequest) {
+  public List<RelatedCase> getSiteRelatedCases(@PathVariable Long caseId, HttpServletRequest httpServletRequest, @RequestParam(value = "system", required = false) String systemParam,
+                                               @RequestHeader(value = "X-System", required = false) String xSystemHeader) {
+    SourceSystem system = resolveSystem(systemParam, xSystemHeader);
     String username = null;
     try {
       username = httpServletRequest.getUserPrincipal().getName();
       LOG.debug(username, "Reading site related cases for caseId " + caseId);
-      return incidentService.getSiteRelatedCases(caseId, httpServletRequest.getUserPrincipal().getName());
+      return system == null ? incidentService.getSiteRelatedCases(caseId, httpServletRequest.getUserPrincipal().getName()) : incidentService.getSiteRelatedCases(caseId, httpServletRequest.getUserPrincipal().getName(), system);
     } catch (Exception e) {
       LOG.error(username, Error.GET_SITE_RELATED_CASES, e);
       throw e;
@@ -376,14 +416,34 @@ public class IncidentController {
   @RequestMapping(path = "/nationality/searcher",
                   method = RequestMethod.GET,
                   produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<String> getNationalitiesSearcher(HttpServletRequest httpServletRequest) {
+  public List<String> getNationalitiesSearcher(HttpServletRequest httpServletRequest, @RequestParam(value = "system", required = false) String systemParam,
+                                               @RequestHeader(value = "X-System", required = false) String xSystemHeader) {
+    SourceSystem system = resolveSystem(systemParam, xSystemHeader);
     String username = null;
     try {
       username = httpServletRequest.getUserPrincipal().getName();
-      return incidentService.getNationalitiesSearcher();
+      return system == null ? incidentService.getNationalitiesSearcher() : incidentService.getNationalitiesSearcher(system);
     } catch (Exception e) {
       LOG.error(username, Error.LIST_NATIONALITIES, e);
       throw e;
+    }
+  }
+
+  private SourceSystem resolveSystem(String param, String header) {
+    return getSourceSystem(param, header, LOG);
+  }
+
+  static SourceSystem getSourceSystem(String param, String header, Logger log) {
+    String v = (param != null && !param.trim().isEmpty()) ? param : header;
+
+    if (v == null || v.trim().isEmpty()) {
+      return null;
+    }
+    try {
+      return SourceSystem.valueOf(v.trim().toUpperCase());
+    } catch (IllegalArgumentException ex) {
+      log.warn("Unknown system value '{}', falling back to default (COGNITEC)", v);
+      return null;
     }
   }
 

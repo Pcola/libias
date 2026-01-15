@@ -8,6 +8,7 @@ import com.cognitec.IdentificationResult;
  */
 public class IdentBinningResponse {
   private IdentificationResult val;
+  private Long requestId;
   
   private ImageType imgType;
 
@@ -25,5 +26,13 @@ public class IdentBinningResponse {
 
   public void setImgType(ImageType imgType) {
     this.imgType = imgType;
-  }  
+  }
+
+    public Long getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(Long requestId) {
+        this.requestId = requestId;
+    }
 }

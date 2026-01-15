@@ -8,20 +8,24 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import sk.atos.fri.common.Constants;
 import sk.atos.fri.dao.HeaderParserService;
-import sk.atos.fri.dao.libias.model.BamUser;
-import sk.atos.fri.dao.libias.model.Incident;
+import sk.atos.fri.dao.libias.domain.Incident;
+import sk.atos.fri.dao.libias.enums.SourceSystem;
 import sk.atos.fri.dao.libias.model.Report;
-import sk.atos.fri.dao.libias.service.IncidentService;
+import sk.atos.fri.dao.libias.service.IIncidentService;
 import sk.atos.fri.dao.libias.service.ReportService;
 import sk.atos.fri.dao.libias.service.UserService;
 import sk.atos.fri.log.Error;
 import sk.atos.fri.log.Logger;
 import sk.atos.fri.pdf.IncidentReport;
+
+import static sk.atos.fri.rest.service.IncidentController.getSourceSystem;
 
 @RestController
 @RequestMapping(path = "/report")
@@ -34,7 +38,7 @@ public class ReportController {
   private HeaderParserService headerParserService;
 
   @Autowired
-  private IncidentService incidentService;
+  private IIncidentService incidentService;
 
   @Autowired
   private UserService userService;
@@ -56,13 +60,19 @@ public class ReportController {
   @RequestMapping(path = "/create/{caseId}",
           method = RequestMethod.GET,
           produces = MediaType.APPLICATION_PDF_VALUE)
-  public byte[] createReport(@PathVariable Long caseId, HttpServletRequest request) throws DocumentException, IOException {    
+  public byte[] createReport(@PathVariable Long caseId, @RequestParam(value = "system", required = false) String systemParam,
+                             @RequestHeader(value = "X-System", required = false) String xSystemHeader, HttpServletRequest request) throws DocumentException, IOException {
     String username = null;
     try {
       username = request.getUserPrincipal().getName();
       LOG.info(username, "Generate PDF report for caseId: " + caseId);
 
-      Incident inc = incidentService.findByCaseId(caseId);
+      SourceSystem system = resolveSystem(systemParam, xSystemHeader);
+
+      Incident inc = (system == null)
+              ? incidentService.findByCaseId(caseId)
+              : incidentService.findByCaseId(caseId, system);
+
       if (inc == null) {
         throw new IllegalArgumentException("Incident not found for given caseId");
       }
@@ -110,5 +120,9 @@ public class ReportController {
       LOG.error(username, Error.GET_REPORT, e);
       throw e;
     }
+  }
+
+  private SourceSystem resolveSystem(String param, String header) {
+    return getSourceSystem(param, header, LOG);
   }
 }

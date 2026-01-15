@@ -1,6 +1,6 @@
 import { Route } from '@angular/router';
 
-import { IncidentListComponent, IncidentItemComponent, AussenstellerListComponent, AussenstellerDetailComponent, IssueDetailComponent, StatisticsComponent, ComparerComponent, SearcherComponent }
+import { IncidentListComponent, IncidentItemComponent, AussenstellerListComponent, AussenstellerDetailComponent, IssueDetailComponent, StatisticsComponent, ComparerComponent, SearcherComponent, TrafficLightComponent, SearchListComponent }
   from './incident/index';
 import { UserListComponent, ChangePasswordComponent } from './user/index';
 import { LoginComponent } from './login/login.component';
@@ -14,8 +14,10 @@ export const BAMFaceRoutes: Route[] = [
   { path: 'aussensteller-list', component: AussenstellerListComponent },
   { path: 'aussensteller-detail/:id', component: AussenstellerDetailComponent },
   { path: 'statistics', component: StatisticsComponent },
+  { path: 'traffic-light', component: TrafficLightComponent },
   { path: 'comparer', component: ComparerComponent },
   { path: 'searcher', component: SearcherComponent },
+  { path: 'search-list', component: SearchListComponent },
   { path: 'issue-detail', component: IssueDetailComponent },
   { path: 'user-list', component: UserListComponent },
   { path: 'password-change', component: ChangePasswordComponent },

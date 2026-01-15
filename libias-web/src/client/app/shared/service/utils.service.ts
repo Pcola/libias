@@ -6,6 +6,7 @@ import { LoginService } from './login.service';
 import { NotificationService } from './notification.service';
 import { PersonResponse } from '../model/person';
 import { TableData } from '../model/case/table-data.model';
+import { DatePipe } from '@angular/common';
 
 @Injectable()
 export class Utils {
@@ -14,7 +15,8 @@ export class Utils {
     private translate: TranslateService,
     private loginService: LoginService,
     private notificationService: NotificationService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private datePipe: DatePipe
   ) {
   }
 
@@ -125,23 +127,39 @@ export class Utils {
   constructInfoTable(personInfo: PersonResponse): TableData[] {
     const data: TableData[] = [];
 
-    // data.push(new TableData('Anwendung',  personInfo ? personInfo.application : 'Lokaler speicher'));
-    // data.push(new TableData('Rechtsgrund', personInfo ? personInfo.reason : ''));
-    // data.push(new TableData('EDV-Zahl', personInfo ? personInfo.edvNumber : ''));
-    // data.push(new TableData('Lichtbildnummer', personInfo && personInfo.photoNumber ? personInfo.photoNumber.toString() : ''));
-    // data.push(new TableData('Bilddatum', personInfo && personInfo.photoDate ? personInfo.photoDate : ''));
-    // data.push(new TableData('ED-Datum', personInfo && personInfo.edDate ? personInfo.edDate : ''));
-    // data.push(new TableData('AFIS-Zahl', personInfo && personInfo.afisNumber ? personInfo.afisNumber.toString() : ''));
+    if (!personInfo) {
+      return data;
+    }
 
-    data.push(new TableData('Antragsteller', personInfo ? personInfo.applicantType : ''));
-    data.push(new TableData('Nachname', personInfo ? personInfo.lastName : ''));
-    data.push(new TableData('Vorname', personInfo ? personInfo.firstName : ''));
-    data.push(new TableData('Geburtsdatum', personInfo && personInfo.birthDate ? personInfo.birthDate.toString() : ''));
-    data.push(new TableData('Geburtsland', personInfo ? personInfo.birthCountry : ''));
-    data.push(new TableData('Geburtsort', personInfo ? personInfo.birthPlace : ''));
-    data.push(new TableData('Herkunftsland', personInfo ? personInfo.originCountry : ''));
-    data.push(new TableData('Antragstellerdatum', personInfo && personInfo.applicantDate ? personInfo.applicantDate.toString() : ''));
-    data.push(new TableData('Arbeitsplatz', personInfo ? personInfo.workplace : ''));
+    data.push(new TableData('PKZ', personInfo.pkz ? personInfo.pkz.toString() : ''));
+    data.push(new TableData('Aktenzeichen', personInfo.fileNumber ? personInfo.fileNumber : ''));
+    data.push(new TableData('Antragstyp', personInfo.applicantType ? personInfo.applicantType : ''));
+    data.push(new TableData('Familienname', personInfo.lastName ? personInfo.lastName : ''));
+    data.push(new TableData('Vorname', personInfo.firstName ? personInfo.firstName : ''));
+    
+    const birthDateFormatted = personInfo.birthDate ? 
+      this.datePipe.transform(new Date(personInfo.birthDate), 'dd.MM.yyyy') : '';
+    data.push(new TableData('Geburtsdatum', birthDateFormatted as string));
+    
+    data.push(new TableData('Geburtsort', personInfo.birthPlace ? personInfo.birthPlace : ''));
+    data.push(new TableData('Geburtsland', personInfo.birthCountry ? personInfo.birthCountry : ''));
+    data.push(new TableData('Herkunftsland', personInfo.originCountry ? personInfo.originCountry : ''));
+    data.push(new TableData('AZR-Nummer', personInfo.azrNumber ? personInfo.azrNumber : ''));
+    data.push(new TableData('D-Nummer', personInfo.dNumber ? personInfo.dNumber : ''));
+    data.push(new TableData('E-Nummer', personInfo.eNumber ? personInfo.eNumber : ''));
+    data.push(new TableData('EURO-DAC Nummer', personInfo.euroDacNumber ? personInfo.euroDacNumber : ''));
+    data.push(new TableData('Geschlecht', personInfo.gender ? personInfo.gender : ''));
+    data.push(new TableData('Staatsangehörigkeit', personInfo.nationality ? personInfo.nationality : ''));
+    data.push(new TableData('Arbeitsplatz', personInfo.workplace ? personInfo.workplace : ''));
+    data.push(new TableData('Alter', personInfo.age ? personInfo.age.toString() : ''));
+    
+    const applicantDateFormatted = personInfo.applicantDate ? 
+      this.datePipe.transform(new Date(personInfo.applicantDate), 'dd.MM.yyyy') : '';
+    data.push(new TableData('Antragstellerdatum', applicantDateFormatted as string));
+    
+    const dateModifiedFormatted = personInfo.dateModified ? 
+      this.datePipe.transform(new Date(personInfo.dateModified), 'dd.MM.yyyy') : '';
+    data.push(new TableData('Zuletzt geändert', dateModifiedFormatted as string));
 
     return data;
   }
